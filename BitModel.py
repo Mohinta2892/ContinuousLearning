@@ -10,8 +10,8 @@ MODEL_OR_PATH = 'models/binary/model_OR.pth'
 
 device = torch.device("cpu")
 
-model_AND = SimpleNN(inputSize=2, hiddenLayer=10, outputSize=1).to(device)
-model_OR = SimpleNN(inputSize=2, hiddenLayer=10, outputSize=1).to(device)
+model_AND = SimpleNN(inputSize=2, hiddenLayer=3, outputSize=1).to(device)
+model_OR = SimpleNN(inputSize=2, hiddenLayer=3, outputSize=1).to(device)
 
 if(not(RETRAIN_MODEL) and os.path.isfile(MODEL_AND_PATH) and os.path.isfile(MODEL_OR_PATH)):
     print("Models exists. Using old models.")
