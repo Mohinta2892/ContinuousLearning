@@ -17,7 +17,7 @@ class SimpleNN(nn.Module):
     def forward(self, x):
         # x = torch.sum(x, dim=1)
         # x = self.emb(x)
-        x = F.relu(self.fc1(x.float()))         # Activation on the hidden layer
+        x = F.relu(self.fc1(x.float())) # Activation on the hidden layer
         x = self.fc2(x)                 # No activation on the output layer
 
         return F.log_softmax(x, dim=1)  # Return either a 0 or 1
