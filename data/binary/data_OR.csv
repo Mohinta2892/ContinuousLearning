@@ -1,5 +1,5 @@
-x1,x2,label
-True,True,True
-False,False,False
-False,True,True
-True,False,True
+x1,x2,op,label
+True,True,1,True
+False,False,1,False
+False,True,1,True
+True,False,1,True

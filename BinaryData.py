@@ -14,8 +14,8 @@ class BinaryData(Dataset):
         return len(self.label)
 
     def __getitem__(self, index):
-        sample = torch.tensor(self.label.iloc[index, 0:2]).int()
-        label = torch.tensor(self.label.iloc[index, 2]).int()
+        sample = torch.tensor(self.label.iloc[index, 0:3]).int()
+        label = torch.tensor(self.label.iloc[index, 3]).int()
         return sample, label
 
 # y = f(x) = x1 ^ x2

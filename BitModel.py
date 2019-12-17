@@ -3,15 +3,15 @@ from utilities import *
 import os.path
 import torch
 
-RETRAIN_MODEL = False
+RETRAIN_MODEL = True
 
 MODEL_AND_PATH = 'models/binary/model_AND.pth'
 MODEL_OR_PATH = 'models/binary/model_OR.pth'
 
 device = torch.device("cpu")
 
-model_AND = SimpleNN(inputSize=2, hiddenLayer=3, outputSize=1).to(device)
-model_OR = SimpleNN(inputSize=2, hiddenLayer=3, outputSize=1).to(device)
+model_AND = SimpleNN(inputSize=3, hiddenLayer=10, outputSize=1).to(device)
+model_OR = SimpleNN(inputSize=3, hiddenLayer=10, outputSize=1).to(device)
 
 if(not(RETRAIN_MODEL) and os.path.isfile(MODEL_AND_PATH) and os.path.isfile(MODEL_OR_PATH)):
     print("Models exists. Using old models.")
@@ -32,8 +32,8 @@ else:
 
 
 inputs = torch.tensor([[0,0],[0,1],[1,0],[1,1]])
-predAnd = check_model(inputs, model_AND)
-predOr = check_model(inputs, model_OR)
+predAnd = check_model(torch.cat((inputs, torch.zeros([4,1]).long()), dim=1), model_AND)
+predOr = check_model(torch.cat((inputs, torch.ones([4,1]).long()), dim=1), model_OR)
 
 print(predAnd)
 print(predOr)
