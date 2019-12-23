@@ -18,6 +18,9 @@ class BinaryData(Dataset):
         label = torch.tensor(self.label.iloc[index, 3]).int()
         return sample, label
 
+    def get_sample(self):
+        return torch.tensor([self.label.iloc[x, 0:3] for x in range(4)])
+
 # y = f(x) = x1 ^ x2
 def getAndData(inputSize):
     x1 = np.random.randint(2, size=inputSize)
