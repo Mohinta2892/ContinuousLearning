@@ -1,9 +1,9 @@
 from models.binary.SimpleNN import SimpleNN
-from utilities import *
+from models.binary.utilities import *
 import os.path
 import torch
 
-RETRAIN_MODEL = False
+RETRAIN_MODEL = True
 
 MODEL_AND_PATH = 'models/binary/model_AND.pth'
 MODEL_OR_PATH = 'models/binary/model_OR.pth'
