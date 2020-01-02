@@ -5,8 +5,8 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from BinaryData import BinaryData
-from EwcNN import EWC
+from data.BinaryData import BinaryData
+from models.binary.EwcNN import EWC
 
 from tqdm import tqdm
 
