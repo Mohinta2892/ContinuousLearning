@@ -8,8 +8,6 @@ import random
 
 from models.mnist.utilities import *
 from data.MnistData import getDataLoaders
-from test import PermutedMNIST
-
 RETRAIN_MODEL = False
 
 device = getDevice()
