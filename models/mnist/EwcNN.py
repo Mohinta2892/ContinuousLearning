@@ -42,7 +42,7 @@ class EWC(object):
             for n, p in self.model.named_parameters():
                 precision_matrices[n].data += p.grad.data ** 2 / len(self.dataset)
 
-        precision_matrices = {n: p for n, p in precision_matrices.items()}
+        # precision_matrices = {n: p for n, p in precision_matrices.items()}
         return precision_matrices
 
     def penalty(self, model: nn.Module):

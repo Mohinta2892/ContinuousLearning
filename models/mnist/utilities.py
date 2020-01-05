@@ -59,9 +59,9 @@ def train_ewc(model, trainset, device, task, oldSets, optimizer, EPOCHS=5):
     print(f'###          Training model for task {task}               ###')
     print("########################################################")
 
-    importance = 1000
-    sample_size = 1000
-    loss_function = nn.NLLLoss()
+    importance = 3000
+    sample_size = 400
+    loss_function = nn.CrossEntropyLoss()
 
     if task == 1:
         for epoch in tqdm(range(EPOCHS)):
