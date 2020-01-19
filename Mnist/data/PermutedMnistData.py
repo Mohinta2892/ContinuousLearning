@@ -1,6 +1,9 @@
 import random
 import torch
+import numpy as np
 from torchvision import datasets
+
+import matplotlib.pyplot as plt
 
 class PermutedMnistData(datasets.MNIST):
 
@@ -9,10 +12,19 @@ class PermutedMnistData(datasets.MNIST):
 
         assert len(permute_idx) == 28*28
 
-        self.data = torch.stack([img.float().view(-1)[permute_idx] // 255 for img in self.data])
+        self.data = torch.stack([img.float().view(-1)[permute_idx] for img in self.data])
+
+        # for i, img in enumerate(self.data):
+        #     if i == 2: break;
+        #     print (img)
+
+        #     plt.imshow(img.view(28,28))
+        #     plt.show()        
+
+            # img = img.float().view(-1)
+            # img = img[permute_idx]
 
     def __getitem__(self, index):
-
         img, target = self.data[index], self.targets[index]
 
         return img, target

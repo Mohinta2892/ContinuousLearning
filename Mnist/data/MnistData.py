@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def getDataLoaders(targets):
+def getDataLoaders(targets, batch_size=10):
     train = datasets.MNIST('data/', train=True, download=True, transform=transforms.Compose([transforms.ToTensor()]))
     test = datasets.MNIST('data/', train=False, download=True, transform=transforms.Compose([transforms.ToTensor()]))
 
@@ -17,8 +17,8 @@ def getDataLoaders(targets):
     train = torch.utils.data.dataset.Subset(train, np.where(idx_train==True)[0])
     test = torch.utils.data.dataset.Subset(test, np.where(idx_test==True)[0])
 
-    trainset = torch.utils.data.DataLoader(train, batch_size=10, shuffle=True)
-    testset = torch.utils.data.DataLoader(test, batch_size=10, shuffle=False)
+    trainset = torch.utils.data.DataLoader(train, batch_size=batch_size, shuffle=True)
+    testset = torch.utils.data.DataLoader(test, batch_size=batch_size, shuffle=False)
 
     # for data in trainset:
     #     x, y = data

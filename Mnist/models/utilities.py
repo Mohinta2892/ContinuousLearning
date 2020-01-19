@@ -68,7 +68,7 @@ def train_ewc(model, trainset, testset, device, task, oldSets, optimizer, EPOCHS
     print(f'###          Training model for task {task}               ###')
     print("########################################################")
 
-    sample_size = 400
+    sample_size = 180
     loss_function = nn.CrossEntropyLoss()
 
     loss = []

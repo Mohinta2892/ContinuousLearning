@@ -14,14 +14,17 @@ from data.MnistData import getDataLoaders
 
 device = getDevice()
 EPOCHS = 5
+batch_size = 64
+hidden_size = 200
+importance = 1000
 
-trainsetA, testsetA = getDataLoaders([0,2])
-trainsetB, testsetB = getDataLoaders([1,3])
-# trainsetC, testsetC = getDataLoaders([2])
+trainsetA, testsetA = getDataLoaders([0,1], batch_size)
+trainsetB, testsetB = getDataLoaders([2,3], batch_size)
+# trainsetC, testsetC = getDataLoaders([4,5], batch_size)
 # trainsetD, testsetD = getDataLoaders([3])
 
-model = SimpleNN(outputSize=4, hiddenSize=40).to(device)
-optimizer = optim.SGD(model.parameters(), lr=7e-4)
+model = SimpleNN(outputSize=6, hiddenSize=hidden_size).to(device)
+optimizer = optim.SGD(model.parameters(), lr=1e-3)
 # optimizer = optim.RMSprop(model.parameters(), lr=3e-4)
 
 # EWC
@@ -31,13 +34,13 @@ optimizer = optim.SGD(model.parameters(), lr=7e-4)
 lossA, accA = train_and_test(model, trainsetA, [testsetA], device, 1, [], optimizer, EPOCHS)
 
 # Task B
-lossB, accB = train_and_test(model, trainsetB, [testsetA, testsetB], device, 2, [trainsetA], optimizer, EPOCHS, importance=5000)
+lossB, accB = train_and_test(model, trainsetB, [testsetA, testsetB], device, 2, [trainsetA], optimizer, EPOCHS, importance=importance)
 
-# Task A again
-lossC, accC = train_and_test(model, trainsetA, [testsetA, testsetB], device, 2, [trainsetA, trainsetB], optimizer, EPOCHS, importance=5000)
+# # Task A again
+# lossC, accC = train_and_test(model, trainsetA, [testsetA, testsetB], device, 2, [trainsetA, trainsetB], optimizer, EPOCHS, importance=importance)
 
 # Task C
-# lossC, accC = train_and_test(model, trainsetC, [testsetA, testsetB, testsetC], device, 3, [trainsetA, trainsetB], optimizer, EPOCHS)
+# lossC, accC = train_and_test(model, trainsetC, [testsetA, testsetB, testsetC], device, 3, [trainsetA, trainsetB], optimizer, EPOCHS, importance=importance)
 
 # loss = np.array([lossA, lossB, lossC])
 # acc = np.array([accA[0] + accB[0] + accC[0], accB[1] + accC[1], accC[2]])
