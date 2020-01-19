@@ -1,0 +1,8 @@
+ewc/
+samia/
+pytorch-ewc-master/
+chainer-EWC-master/
+Continual-Learning-Benchmark-master/
+__pycache__
+.vscode
+data/mnist/
