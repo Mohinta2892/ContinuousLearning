@@ -1,13 +1,13 @@
-from models.binary.SimpleNN import SimpleNN
-from models.binary.utilities import *
+from model.SimpleNN import SimpleNN
+from model.utilities import *
 import os.path
 import torch
 
 RETRAIN_MODEL = True
 
-MODEL_AND_PATH = 'models/binary/model_AND.pth'
-MODEL_OR_PATH = 'models/binary/model_OR.pth'
-MODEL_EWC_PATH = 'models/binary/model_EWC.pth'
+MODEL_AND_PATH = 'model/model_AND.pth'
+MODEL_OR_PATH = 'model/model_OR.pth'
+MODEL_EWC_PATH = 'model/model_EWC.pth'
 
 device = torch.device("cpu")
 
@@ -27,9 +27,9 @@ if(not(RETRAIN_MODEL) and os.path.isfile(MODEL_AND_PATH) and os.path.isfile(MODE
 else:    
     print("Models does not exist. Creating models.")
     
-    train_model(model_AND, 'data/binary/data_AND.csv', device)
-    train_model(model_OR, 'data/binary/data_OR.csv', device)
-    train_ewc(model_EWC, 10000, device, ['data/binary/data_AND.csv', 'data/binary/data_OR.csv'])
+    train_model(model_AND, 'data/data_AND.csv', device)
+    train_model(model_OR, 'data/data_OR.csv', device)
+    train_ewc(model_EWC, 10000, device, ['data/data_AND.csv', 'data/data_OR.csv'])
 
     print("Saving model.")
 
@@ -38,9 +38,9 @@ else:
     torch.save(model_EWC.state_dict(), MODEL_EWC_PATH)
 
 # Get the data
-dataset = BinaryData(csv_path='data/binary/data_AND.csv')
+dataset = BinaryData(csv_path='data/data_AND.csv')
 dataloaderAND = DataLoader(dataset, batch_size=4, shuffle=True)
-dataset = BinaryData(csv_path='data/binary/data_OR.csv')
+dataset = BinaryData(csv_path='data/data_OR.csv')
 dataloaderOR = DataLoader(dataset, batch_size=4, shuffle=True)
 
 print(f'AND Model Accuracy: {test_model(model_AND, dataloaderAND) * 100}%')

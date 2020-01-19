@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 
 
 def getDataLoaders(targets):
-    train = datasets.MNIST('data/mnist', train=True, download=True, transform=transforms.Compose([transforms.ToTensor()]))
-    test = datasets.MNIST('data/mnist', train=False, download=True, transform=transforms.Compose([transforms.ToTensor()]))
+    train = datasets.MNIST('data/', train=True, download=True, transform=transforms.Compose([transforms.ToTensor()]))
+    test = datasets.MNIST('data/', train=False, download=True, transform=transforms.Compose([transforms.ToTensor()]))
 
     idx_train = np.isin(train.targets, targets)
     idx_test = np.isin(test.targets, targets)

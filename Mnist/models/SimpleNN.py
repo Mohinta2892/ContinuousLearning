@@ -10,6 +10,7 @@ class SimpleNN(nn.Module):
         self.fc2 = nn.Linear(hiddenSize, hiddenSize)
         self.fc3 = nn.Linear(hiddenSize, hiddenSize)
         self.fc4 = nn.Linear(hiddenSize, outputSize)
+        # self.dropout = nn.Dropout(p=0.5)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))

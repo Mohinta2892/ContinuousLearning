@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from data.BinaryData import BinaryData
-from models.binary.EwcNN import EWC
+from model.EwcNN import EWC
 
 from tqdm import tqdm
 
