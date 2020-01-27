@@ -16,6 +16,7 @@ from data.MnistData import getDataLoaders
 from data.PermutedMnistData import PermutedMnistData
 
 device = getDevice()
+tasks = 5
 EPOCHS = 10
 batch_size = 128
 hidden_size = 200
@@ -41,37 +42,37 @@ def get_permute_mnist(tasks, batchSize):
 
     return train_loader, test_loader               
 
-# train_loader, test_loader = get_permute_mnist(5, batch_size)
+train_loader, test_loader = get_permute_mnist(tasks, batch_size)
 
-# model = SimpleNN(outputSize=10, hiddenSize=hidden_size).to(device)
-# optimizer = optim.Adam(model.parameters(), lr=1e-3)
-# # optimizer = optim.RMSprop(model.parameters(), lr=1e-3)
+model = SimpleNN(outputSize=10, hiddenSize=hidden_size).to(device)
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
 # # EWC
 # ##############################################################
 
-# # Task A
-# lossA, accA = train_and_test(model, train_loader[0], test_loader[0:1], device, 1, [], optimizer, EPOCHS)
+# Task A
+lossA, accA = train_and_test(model, train_loader[0], test_loader[0:1], device, 1, [], optimizer, EPOCHS)
 
-# # Task B
-# lossB, accB = train_and_test(model, train_loader[1], test_loader[0:2], device, 2, train_loader[0:1], optimizer, EPOCHS, importance=importance)
+# Task B
+lossB, accB = train_and_test(model, train_loader[1], test_loader[0:2], device, 2, train_loader[0:1], optimizer, EPOCHS, importance=importance)
 
-# # Task C
-# lossC, accC = train_and_test(model, train_loader[2], test_loader[0:3], device, 3, train_loader[0:2], optimizer, EPOCHS, importance=importance)
+# Task C
+lossC, accC = train_and_test(model, train_loader[2], test_loader[0:3], device, 3, train_loader[0:2], optimizer, EPOCHS, importance=importance)
 
-# # Task D
-# lossD, accD = train_and_test(model, train_loader[3], test_loader[0:4], device, 4, train_loader[0:3], optimizer, EPOCHS, importance=importance)
+# Task D
+lossD, accD = train_and_test(model, train_loader[3], test_loader[0:4], device, 4, train_loader[0:3], optimizer, EPOCHS, importance=importance)
 
-# # Task E
-# lossE, accE = train_and_test(model, train_loader[4], test_loader[0:5], device, 5, train_loader[0:4], optimizer, EPOCHS, importance=importance)
+# Task E
+lossE, accE = train_and_test(model, train_loader[4], test_loader[0:5], device, 5, train_loader[0:4], optimizer, EPOCHS, importance=importance)
 
-# loss = np.array([lossA, lossB, lossC, lossD, lossE])
-# acc = np.array([accA[0] + accB[0] + accC[0] + accD[0] + accE[0], accB[1] + accC[1] + accD[1] + accE[1], accC[2] + accD[2] + accE[2], accD[3] + accE[3], accE[4]])
-# np.save("loss.npy", loss)
-# np.save("acc.npy", acc)
+loss = np.array([lossA, lossB, lossC, lossD, lossE])
+acc = np.array([accA[0] + accB[0] + accC[0] + accD[0] + accE[0], accB[1] + accC[1] + accD[1] + accE[1], accC[2] + accD[2] + accE[2], accD[3] + accE[3], accE[4]])
 
-loss = np.load("loss.npy", allow_pickle=True)
-acc = np.load("acc.npy", allow_pickle=True)
+np.save("loss_permuted.npy", loss)
+np.save("acc_permuted.npy", acc)
+
+# loss = np.load("loss_permuted.npy", allow_pickle=True)
+# acc = np.load("acc_permuted.npy", allow_pickle=True)
 
 loss = loss.reshape(-1)
 

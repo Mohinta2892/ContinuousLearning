@@ -14,15 +14,17 @@ class PermutedMnistData(datasets.MNIST):
 
         self.data = torch.stack([img.float().view(-1)[permute_idx] for img in self.data])
 
-        # for i, img in enumerate(self.data):
-        #     if i == 2: break;
-        #     print (img)
+        for i, img in enumerate(self.data):
+            if i == 2: break;
+            print (img)
 
-        #     plt.imshow(img.view(28,28))
-        #     plt.show()        
+            plt.imshow(img.view(28,28))
+            plt.show()   
 
-            # img = img.float().view(-1)
-            # img = img[permute_idx]
+            plt.savefig('permutedMnist.png')     
+
+            img = img.float().view(-1)
+            img = img[permute_idx]
 
     def __getitem__(self, index):
         img, target = self.data[index], self.targets[index]
