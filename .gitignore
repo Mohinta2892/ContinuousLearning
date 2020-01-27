@@ -1,9 +1,11 @@
+# Other projects
 ewc/
 samia/
 pytorch-ewc-master/
 chainer-EWC-master/
 Continual-Learning-Benchmark-master/
+
+# Housekeeping
 __pycache__
 **/.vscode
 .vscode
-data/
