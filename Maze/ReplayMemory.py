@@ -7,6 +7,7 @@ class ReplayMemory(object):
         self.capacity = capacity
         self.memory   = []
         self.position = 0
+        self.counter  = 0
 
     # Save a transition
     def push(self, *args):
@@ -15,6 +16,7 @@ class ReplayMemory(object):
         
         self.memory[self.position] = Transition(*args)
         self.position = (self.position + 1) % self.capacity
+        self.counter += 1
 
     def sample(self, batch_size):
         return random.sample(self.memory, batch_size)

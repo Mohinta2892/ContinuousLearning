@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "0f18b3028a6bdfe3c43bca070b5c6a5dadad283bb826a521323a890d3df2262f"
+            "sha256": "94f0a8a8b9e3f84836747e8a9f4c9e6c5339f50023c9fb522be17e09c9a5b5ac"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -40,7 +40,6 @@
             "hashes": [
                 "sha256:c5da331c6d9234dfe8edc64b34cfbe654783ea8b7bc85089aff0579b8659051a"
             ],
-            "index": "pypi",
             "version": "==0.16.0"
         },
         "gym-minigrid": {
@@ -198,10 +197,10 @@
         },
         "pyglet": {
             "hashes": [
-                "sha256:9ae8ef328382ee4705ac52a000e37f7cb3209220a33ef779e3b18a9d23baef9b",
-                "sha256:c57e3e18246f45e4d6bb3d29e39d128d6e72b05f4212b10353adc3ba260ceb65"
+                "sha256:6ea918985feddfa9bf0fcc01ffe9ff5849e7b6e832d9b2e03b9d2a36369cb6ee",
+                "sha256:a42f599ebd0dc8113563041c402ae09be05cdcbc643bb1183785141ba3c3304e"
             ],
-            "version": "==1.4.10"
+            "version": "==1.5.0"
         },
         "pyparsing": {
             "hashes": [
@@ -297,11 +296,11 @@
         },
         "tqdm": {
             "hashes": [
-                "sha256:251ee8440dbda126b8dfa8a7c028eb3f13704898caaef7caa699b35e119301e2",
-                "sha256:fe231261cfcbc6f4a99165455f8f6b9ef4e1032a6e29bccf168b4bf42012f09c"
+                "sha256:0d8b5afb66e23d80433102e9bd8b5c8b65d34c2a2255b2de58d97bd2ea8170fd",
+                "sha256:f35fb121bafa030bd94e74fcfd44f3c2830039a2ddef7fc87ef1c2d205237b24"
             ],
             "index": "pypi",
-            "version": "==4.42.1"
+            "version": "==4.43.0"
         }
     },
     "develop": {}
