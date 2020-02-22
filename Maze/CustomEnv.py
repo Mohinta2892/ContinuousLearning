@@ -6,9 +6,10 @@ class EmptyEnv(MiniGridEnv):
     Empty grid environment, no obstacles, sparse reward
     """
 
-    def __init__(self, size=8, agent_start_pos=(1,1), agent_start_dir=0):
+    def __init__(self, goal_position, size=8, agent_start_pos=(1,1), agent_start_dir=0):
         self.agent_start_pos = agent_start_pos
         self.agent_start_dir = agent_start_dir
+        self.goal_position = goal_position
 
         super().__init__(
             grid_size=size,
@@ -26,7 +27,7 @@ class EmptyEnv(MiniGridEnv):
         self.grid.wall_rect(0, 0, width, height)
 
         # Place a goal square in the bottom-right corner
-        self.put_obj(Goal(), 1, height - 2)
+        self.put_obj(Goal(), self.goal_position[0], self.goal_position[1])
 
         # Place the agent
         if self.agent_start_pos is not None:
