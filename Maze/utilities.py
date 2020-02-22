@@ -26,6 +26,27 @@ def extractState(state):
     state = np.append(state['image'][:,:,0].flatten(), state['direction']);
     return torch.FloatTensor([state])
 
+def test(net, env):
+
+    state = env.reset()
+    state = extractState(state)
+
+    steps_taken = 0
+
+    while True:
+        env.render()
+        action = net(state).argmax().item()
+        next_state, reward, done, info = env.step(action)
+        steps_taken += 1
+
+        if done:
+            break
+
+        state = extractState(next_state)
+
+    print(f"Testing took {steps_taken} steps.")
+
+
 def train(dqn, env, episode_durations, EPISODES, CONSOLE_UPDATE_RATE, visualizer):
 
     for episode in range(EPISODES):

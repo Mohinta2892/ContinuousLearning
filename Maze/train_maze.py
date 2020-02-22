@@ -37,9 +37,12 @@ dqn = DQN(GAMMA, MEMORY_SIZE, TARGET_UPDATE, BATCH_SIZE, env_state_num, env_acti
 visualizer = Visualizer()
 episode_durations = []
 
-
 train(dqn, env_right, episode_durations, EPISODES, CONSOLE_UPDATE_RATE, visualizer)
+test(dqn, env_right)
+
 train(dqn, env_down, episode_durations, EPISODES, CONSOLE_UPDATE_RATE, visualizer)
+test(dqn.eval_model, env_right)
+test(dqn.eval_model, env_down)
 
 dqn.save("maze_model.pth")
 visualizer.save_plot("maze.png")
