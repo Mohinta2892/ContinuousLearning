@@ -24,9 +24,10 @@ num_of_states = env_shape[0] * env_shape[1] + 1
 
 # Init and load Net
 net = Net(num_of_states, 200, num_of_actions)
-net.load_state_dict(torch.load("models/maze/maze_model_both.pth"))
+net.load_state_dict(torch.load("models/maze/maze_model_combined_reverse.pth"))
 net.eval()
 
 test(net, env_right)
 test(net, env_down)
 test(net, env_diagonal)
+

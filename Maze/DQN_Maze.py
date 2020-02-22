@@ -69,6 +69,9 @@ class DQN(object):
         self.epsilon = max(EPSILON_MIN, self.epsilon)
         print(f"Epsilon is {self.epsilon}")
 
+    def reset_epsilon(self):
+        self.epsilon = EPSILON_MAX
+
     def learn(self):
         if len(self.memory) < self.batch_size:
             return
@@ -93,6 +96,7 @@ class DQN(object):
 
         new_q = (q_next * self.gamma) + reward_batch
 
+        # update loss to EWC?
         loss = self.loss_func(q_eval, new_q)
 
         self.optimizer.zero_grad()

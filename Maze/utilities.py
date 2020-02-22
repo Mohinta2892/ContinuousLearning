@@ -74,7 +74,7 @@ def train(dqn, env, episode_durations, EPISODES, CONSOLE_UPDATE_RATE, visualizer
             if done: 
                 if episode % CONSOLE_UPDATE_RATE == 0:
                     print(f"{episode} Episode finished after {steps} steps.")
-                break;
+                break
 
             state = next_state
 
@@ -86,3 +86,49 @@ def train(dqn, env, episode_durations, EPISODES, CONSOLE_UPDATE_RATE, visualizer
 
         if steps % 10_000 == 0:
             break;
+
+
+
+def train_ewc(dqn, env, episode_durations, EPISODES, CONSOLE_UPDATE_RATE, visualizer):
+
+    # Calculate Fisher by creating the EWC object
+
+    # Do you need a seperate ReplayMemory store?
+
+    for episode in range(EPISODES):
+        state = env.reset()
+        state = extractState(state)
+        steps = 0
+
+        while True:
+            if episode % CONSOLE_UPDATE_RATE == 0:
+                env.render()
+
+            action = dqn.choose_action(state)
+
+            next_state, reward, done, info = env.step(action.item())
+
+            reward = torch.FloatTensor([[reward]])
+            next_state = extractState(next_state)
+
+            dqn.store_transition(state, action, reward, next_state)
+
+            steps += 1
+            
+            dqn.learn()            
+
+            if done: 
+                if episode % CONSOLE_UPDATE_RATE == 0:
+                    print(f"{episode} Episode finished after {steps} steps.")
+                break
+
+            state = next_state
+
+        dqn.decay_epsilon()
+        episode_durations.append(steps)
+
+        if episode % CONSOLE_UPDATE_RATE == 0:
+            visualizer.plot_durations(episode_durations)
+
+        if steps % 10_000 == 0:
+            break
