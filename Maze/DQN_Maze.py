@@ -10,10 +10,9 @@ from ReplayMemory import ReplayMemory
 from Transition import Transition
 
 HIDDEN_SIZE = 200
-
 EPSILON_MAX = 1.0
-EPSILON_MIN = 0.05
-EPSILON_DECAY = 0.9
+EPSILON_MIN = 0.08
+EPSILON_DECAY = 0.995
 
 class Net(nn.Module):
 
@@ -29,32 +28,31 @@ class Net(nn.Module):
 
 class DQN(object):
 
-    def __init__(self, gamma, memory_size, target_update_counter, batch_size, num_of_states, num_of_actions):
+    def __init__(self, gamma, memory_size, target_update_counter, batch_size, num_of_states, num_of_actions, ewc_importance=28):
         self.num_of_states = num_of_states
         self.num_of_actions = num_of_actions
 
         self.eval_model = Net(self.num_of_states, HIDDEN_SIZE, self.num_of_actions)
         self.target_model = Net(self.num_of_states, HIDDEN_SIZE, self.num_of_actions)
 
-        self.optimizer = torch.optim.Adam(self.eval_model.parameters(), lr=0.01)
+        # self.optimizer = torch.optim.Adam(self.eval_model.parameters(), lr=0.01)
+        self.optimizer = torch.optim.SGD(self.eval_model.parameters(), lr=0.01)
         self.loss_func = nn.MSELoss()
 
         self.memory_size = memory_size
         self.memory = ReplayMemory(memory_size)
         self.target_udpate_counter = target_update_counter
         self.learn_step_counter = 0
-        self.steps_done = 0
         self.batch_size = batch_size
         self.gamma = gamma
         self.epsilon = EPSILON_MAX
+        self.ewc_importance = ewc_importance
 
     def choose_action(self, state):
         # From np.array to torch
         state = torch.FloatTensor(state)
 
         sample = random.random()
-
-        # eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.steps_done / EPS_DECAY)
 
         if sample > self.epsilon:
             return self.eval_model(state).argmax().view(1,1)
@@ -64,15 +62,17 @@ class DQN(object):
     def store_transition(self, state, action, reward, next_state):
         self.memory.push(state, action, next_state, reward)
 
-    def decay_epsilon(self):
+    def decay_epsilon(self, episode):
         self.epsilon *= EPSILON_DECAY
         self.epsilon = max(EPSILON_MIN, self.epsilon)
-        print(f"Epsilon is {self.epsilon}")
+        # print(f"Epsilon is {self.epsilon}, Episode {episode}")
 
-    def reset_epsilon(self):
+    def reset_training(self):
+        self.learn_step_counter = 0
         self.epsilon = EPSILON_MAX
+        self.memory = ReplayMemory(self.memory_size)
 
-    def learn(self):
+    def learn(self, ewc=None):
         if len(self.memory) < self.batch_size:
             return
 
@@ -82,9 +82,8 @@ class DQN(object):
 
         self.learn_step_counter += 1
 
-        # Gives 128 transitions which we combine into one
-        transitions = self.memory.sample(self.batch_size) # transitions.len = 128
-        batch = Transition(*zip(*transitions))  # batch = transition, each element.len = 128
+        transitions = self.memory.sample(self.batch_size) 
+        batch = Transition(*zip(*transitions)) 
 
         state_batch  = torch.cat(batch.state)
         action_batch = torch.cat(batch.action)
@@ -96,8 +95,9 @@ class DQN(object):
 
         new_q = (q_next * self.gamma) + reward_batch
 
-        # update loss to EWC?
         loss = self.loss_func(q_eval, new_q)
+        if ewc is not None:
+            loss + self.ewc_importance * ewc.penalty(self.eval_model)
 
         self.optimizer.zero_grad()
         loss.backward()

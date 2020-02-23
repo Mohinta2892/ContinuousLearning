@@ -4,11 +4,10 @@ import torch.nn.functional as F
 import torchvision.transforms as T
 import numpy as np
 
+from Transition import Transition
 from PIL import Image
-
-resize = T.Compose([T.ToPILImage(),
-                    T.Resize(40, interpolation=Image.CUBIC),
-                    T.ToTensor()])
+from EWC import EWC
+from DQN_Maze import DQN
 
 def getDevice(forceCPU = False):
     if not forceCPU and torch.cuda.is_available():
@@ -20,21 +19,22 @@ def getDevice(forceCPU = False):
 
     return device
 
-
-
 def extractState(state):
     state = np.append(state['image'][:,:,0].flatten(), state['direction']);
     return torch.FloatTensor([state])
 
-def test(net, env):
+def test(net, env, should_render=True):
 
     state = env.reset()
-    state = extractState(state)
+    # state = extractState(state)
+    state = env.extractState()
 
     steps_taken = 0
 
     while True:
-        env.render()
+        if should_render:
+            env.render()
+
         action = net(state).argmax().item()
         next_state, reward, done, info = env.step(action)
         steps_taken += 1
@@ -42,20 +42,26 @@ def test(net, env):
         if done:
             break
 
-        state = extractState(next_state)
+        # state = extractState(next_state)
+        state = env.extractState()
 
     print(f"Testing took {steps_taken} steps.")
 
 
-def train(dqn, env, episode_durations, EPISODES, CONSOLE_UPDATE_RATE, visualizer):
+def train(dqn, env, episode_durations, EPISODES, CONSOLE_UPDATE_RATE, visualizer, task=1):
+
+    if(task > 1):
+        dqn.reset_training()
 
     for episode in range(EPISODES):
         state = env.reset()
-        state = extractState(state)
+        state = env.extractState()
+
+        # state = extractState(state)
         steps = 0
 
         while True:
-            if episode % CONSOLE_UPDATE_RATE == 0:
+            if episode > 0 and episode % CONSOLE_UPDATE_RATE == 0:
                 env.render()
 
             action = dqn.choose_action(state)
@@ -63,7 +69,8 @@ def train(dqn, env, episode_durations, EPISODES, CONSOLE_UPDATE_RATE, visualizer
             next_state, reward, done, info = env.step(action.item())
 
             reward = torch.FloatTensor([[reward]])
-            next_state = extractState(next_state)
+            # next_state = extractState(next_state)
+            next_state = env.extractState()
 
             dqn.store_transition(state, action, reward, next_state)
 
@@ -72,36 +79,49 @@ def train(dqn, env, episode_durations, EPISODES, CONSOLE_UPDATE_RATE, visualizer
             dqn.learn()                
 
             if done: 
-                if episode % CONSOLE_UPDATE_RATE == 0:
-                    print(f"{episode} Episode finished after {steps} steps.")
+                print(f"{episode} Episode finished after {steps} steps.")
                 break
 
             state = next_state
 
-        dqn.decay_epsilon()
+        dqn.decay_epsilon(episode)
         episode_durations.append(steps)
 
         if episode % CONSOLE_UPDATE_RATE == 0:
             visualizer.plot_durations(episode_durations)
 
         if steps % 10_000 == 0:
-            break;
+            break
 
 
 
-def train_ewc(dqn, env, episode_durations, EPISODES, CONSOLE_UPDATE_RATE, visualizer):
+def train_ewc(dqn: DQN, env, old_env, episode_durations, EPISODES, CONSOLE_UPDATE_RATE, visualizer, task):
 
     # Calculate Fisher by creating the EWC object
+    old_states = []
+    sample_size = dqn.batch_size * 2
 
-    # Do you need a seperate ReplayMemory store?
+    for t in range(task - 1):
+        transitions = dqn.memory.sample(sample_size)
+        batch = Transition(*zip(*transitions)) 
+        states = torch.cat(batch.state)
+
+        old_states.append(states)
+    
+    ewc = EWC(dqn, old_states)
+
+    # Reset the dqn
+    dqn.reset_training()
 
     for episode in range(EPISODES):
         state = env.reset()
-        state = extractState(state)
+        state = env.extractState()
+
+        # state = extractState(state)
         steps = 0
 
         while True:
-            if episode % CONSOLE_UPDATE_RATE == 0:
+            if episode > 0 and episode % CONSOLE_UPDATE_RATE == 0:
                 env.render()
 
             action = dqn.choose_action(state)
@@ -109,26 +129,28 @@ def train_ewc(dqn, env, episode_durations, EPISODES, CONSOLE_UPDATE_RATE, visual
             next_state, reward, done, info = env.step(action.item())
 
             reward = torch.FloatTensor([[reward]])
-            next_state = extractState(next_state)
+            # next_state = extractState(next_state)
+            next_state = env.extractState()
 
             dqn.store_transition(state, action, reward, next_state)
 
             steps += 1
             
-            dqn.learn()            
+            dqn.learn(ewc)                
 
             if done: 
-                if episode % CONSOLE_UPDATE_RATE == 0:
-                    print(f"{episode} Episode finished after {steps} steps.")
+                print(f"{episode} Episode finished after {steps} steps.")
                 break
 
             state = next_state
 
-        dqn.decay_epsilon()
+        dqn.decay_epsilon(episode)
         episode_durations.append(steps)
 
         if episode % CONSOLE_UPDATE_RATE == 0:
             visualizer.plot_durations(episode_durations)
+            test(dqn.eval_model, old_env, should_render=False)
+            test(dqn.eval_model, env, should_render=False)
 
         if steps % 10_000 == 0:
             break
