@@ -28,14 +28,11 @@ env_diagonal_reverse = EmptyEnv(size=8, goal_position=[1, 1], agent_start_pos=[6
 
 env = env_right
 
-state = env.reset()
-env_shape = env.observation_space['image'].shape
-
 # Turn Left, Turn Right, Move Forward
 env_action_num = 3
 env_state_num = env.getStateSize()
 
-dqn = DQN(GAMMA, MEMORY_SIZE, TARGET_UPDATE, BATCH_SIZE, env_state_num, env_action_num, ewc_importance=350)
+dqn = DQN(GAMMA, MEMORY_SIZE, TARGET_UPDATE, BATCH_SIZE, env_state_num, env_action_num, ewc_importance=200)
 
 visualizer = Visualizer("DQN Training for Maze")
 episode_durations = []
@@ -45,8 +42,8 @@ test(dqn.eval_model, env_down)
 
 # train(dqn, env_right, episode_durations, 500, CONSOLE_UPDATE_RATE, visualizer, task=2)
 train_ewc(dqn, env_right, env_down, episode_durations, 500, 10, visualizer, task=2)
-test(dqn.eval_model, env_right)
 test(dqn.eval_model, env_down)
+test(dqn.eval_model, env_right)
 
 dqn.save(f"models/maze/{NAME}.pth")
 visualizer.plot_durations(episode_durations)

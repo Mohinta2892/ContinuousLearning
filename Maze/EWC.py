@@ -8,11 +8,11 @@ import random
 from Transition import Transition
 
 class EWC(object):
-    def __init__(self, dqn: DQN, dataset: list, device='cpu'):
+    def __init__(self, dqn: DQN, device='cpu'):
 
         self.dqn = dqn
         self.model = dqn.eval_model
-        self.dataset = dataset
+        self.dataset = dqn.old_memory
         self.device = device
         self.loss_func = nn.MSELoss()
 

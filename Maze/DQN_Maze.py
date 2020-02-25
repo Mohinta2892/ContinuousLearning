@@ -41,6 +41,7 @@ class DQN(object):
 
         self.memory_size = memory_size
         self.memory = ReplayMemory(memory_size)
+        self.old_memory = []
         self.target_udpate_counter = target_update_counter
         self.learn_step_counter = 0
         self.batch_size = batch_size
@@ -70,6 +71,11 @@ class DQN(object):
     def reset_training(self):
         self.learn_step_counter = 0
         self.epsilon = EPSILON_MAX
+
+        # Save a batch of old memories
+        transitions = self.memory.sample(self.batch_size)
+        self.old_memory = self.old_memory + transitions
+
         self.memory = ReplayMemory(self.memory_size)
 
     def learn(self, ewc=None):
@@ -80,15 +86,15 @@ class DQN(object):
         if self.learn_step_counter % self.target_udpate_counter == 0:
             self.target_model.load_state_dict(self.eval_model.state_dict())
 
-        self.learn_step_counter += 1
-
         transitions = self.memory.sample(self.batch_size) 
-        batch = Transition(*zip(*transitions)) 
+        batch = Transition(*zip(*transitions))
 
         state_batch  = torch.cat(batch.state)
         action_batch = torch.cat(batch.action)
         reward_batch = torch.cat(batch.reward)
         next_state_batch = torch.cat(batch.next_state)
+
+        self.optimizer.zero_grad()
 
         q_eval = self.eval_model(state_batch).gather(1, action_batch)
         q_next = self.target_model(next_state_batch).detach().max(1)[0].view(self.batch_size, 1)
@@ -97,11 +103,15 @@ class DQN(object):
 
         loss = self.loss_func(q_eval, new_q)
         if ewc is not None:
-            loss = loss + self.ewc_importance * ewc.penalty(self.eval_model)
+            penalty = ewc.penalty(self.eval_model)
+            updated_loss = loss + self.ewc_importance * penalty
+            # print(f"Loss: {loss}, Penalty: {penalty}, Updated loss: {updated_loss}")
+            loss = updated_loss
 
-        self.optimizer.zero_grad()
+
         loss.backward()
         self.optimizer.step()
+        self.learn_step_counter += 1
 
     def save(self, path):
         torch.save(self.eval_model.state_dict(), path)
