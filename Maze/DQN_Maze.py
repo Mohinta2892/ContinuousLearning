@@ -11,7 +11,7 @@ from Transition import Transition
 
 HIDDEN_SIZE = 200
 EPSILON_MAX = 1.0
-EPSILON_MIN = 0.08
+EPSILON_MIN = 0.05
 EPSILON_DECAY = 0.995
 
 class Net(nn.Module):
@@ -97,7 +97,7 @@ class DQN(object):
 
         loss = self.loss_func(q_eval, new_q)
         if ewc is not None:
-            loss + self.ewc_importance * ewc.penalty(self.eval_model)
+            loss = loss + self.ewc_importance * ewc.penalty(self.eval_model)
 
         self.optimizer.zero_grad()
         loss.backward()

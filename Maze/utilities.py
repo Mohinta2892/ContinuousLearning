@@ -53,7 +53,7 @@ def train(dqn, env, episode_durations, EPISODES, CONSOLE_UPDATE_RATE, visualizer
     if(task > 1):
         dqn.reset_training()
 
-    for episode in range(EPISODES):
+    for episode in range(EPISODES + 1):
         state = env.reset()
         state = env.extractState()
 
@@ -87,9 +87,6 @@ def train(dqn, env, episode_durations, EPISODES, CONSOLE_UPDATE_RATE, visualizer
         dqn.decay_epsilon(episode)
         episode_durations.append(steps)
 
-        if episode % CONSOLE_UPDATE_RATE == 0:
-            visualizer.plot_durations(episode_durations)
-
         if steps % 10_000 == 0:
             break
 
@@ -98,22 +95,19 @@ def train(dqn, env, episode_durations, EPISODES, CONSOLE_UPDATE_RATE, visualizer
 def train_ewc(dqn: DQN, env, old_env, episode_durations, EPISODES, CONSOLE_UPDATE_RATE, visualizer, task):
 
     # Calculate Fisher by creating the EWC object
-    old_states = []
-    sample_size = dqn.batch_size * 2
+    old_transitions = []
+    sample_size = dqn.batch_size // 2
 
     for t in range(task - 1):
         transitions = dqn.memory.sample(sample_size)
-        batch = Transition(*zip(*transitions)) 
-        states = torch.cat(batch.state)
-
-        old_states.append(states)
+        old_transitions = old_transitions + transitions
     
-    ewc = EWC(dqn, old_states)
+    ewc = EWC(dqn, old_transitions)
 
     # Reset the dqn
     dqn.reset_training()
 
-    for episode in range(EPISODES):
+    for episode in range(EPISODES + 1):
         state = env.reset()
         state = env.extractState()
 
@@ -121,8 +115,8 @@ def train_ewc(dqn: DQN, env, old_env, episode_durations, EPISODES, CONSOLE_UPDAT
         steps = 0
 
         while True:
-            if episode > 0 and episode % CONSOLE_UPDATE_RATE == 0:
-                env.render()
+            # if episode > 0 and episode % CONSOLE_UPDATE_RATE == 0:
+                # env.render()
 
             action = dqn.choose_action(state)
 
@@ -148,7 +142,6 @@ def train_ewc(dqn: DQN, env, old_env, episode_durations, EPISODES, CONSOLE_UPDAT
         episode_durations.append(steps)
 
         if episode % CONSOLE_UPDATE_RATE == 0:
-            visualizer.plot_durations(episode_durations)
             test(dqn.eval_model, old_env, should_render=False)
             test(dqn.eval_model, env, should_render=False)
 

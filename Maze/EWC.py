@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from DQN_Maze import Net, DQN
 from copy import deepcopy
 import random
+from Transition import Transition
 
 class EWC(object):
     def __init__(self, dqn: DQN, dataset: list, device='cpu'):
@@ -30,20 +31,21 @@ class EWC(object):
 
         self.model.eval()
 
-        for state in self.dataset:
-
+        for transition in self.dataset:
             self.model.zero_grad()
 
-            output = self.dqn.eval_model(state)
-            pred = self.dqn.target_model(state)
+            output = self.dqn.eval_model(transition.state).gather(1, transition.action)
+            pred = self.dqn.target_model(transition.next_state).detach().max(1)[0]
             
-            loss = self.loss_func(output, pred)
+            new_q = (pred * self.dqn.gamma) + transition.reward
+
+            loss = self.loss_func(output, new_q)
             loss.backward()
 
             for n, p in self.model.named_parameters():
                 precision_matrices[n].data += p.grad.data ** 2 / len(self.dataset)
 
-        # precision_matrices = {n: p for n, p in precision_matrices.items()}
+        precision_matrices = {n: p for n, p in precision_matrices.items()}
         return precision_matrices
 
     def penalty(self, model: nn.Module):

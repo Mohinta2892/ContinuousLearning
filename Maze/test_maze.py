@@ -10,7 +10,7 @@ from CustomEnv import EmptyEnv
 from DQN_Maze import DQN, Net
 from visualise import Visualizer
 
-NAME = "type2_diagonal_reverse_diagonal"
+NAME = "two_tasks_down_right"
 
 # Init env
 env_right = EmptyEnv(size=8, goal_position=[6, 1])
@@ -28,10 +28,10 @@ num_of_states = env.getStateSize()
 # Init and load Net
 net = Net(num_of_states, 200, num_of_actions)
 # net.load_state_dict(torch.load("models/maze/maze_model_both.pth"))
-net.load_state_dict(torch.load(f"models/maze/maze_model_{NAME}.pth"))
+net.load_state_dict(torch.load(f"models/maze/{NAME}.pth"))
 net.eval()
 
-test(net, env_diagonal)
-test(net, env_diagonal_reverse)
+test(net, env_right)
+test(net, env_down)
 # test(net, env_diagonal)
 
