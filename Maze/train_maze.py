@@ -11,12 +11,12 @@ from visualise import Visualizer
 
 import numpy as np
 
-NAME = "two_tasks_down_right_ewc"
+NAME = "test"
 
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 GAMMA = 0.9
-TARGET_UPDATE = 30
-MEMORY_SIZE = 20_000
+TARGET_UPDATE = 25
+MEMORY_SIZE = 10_000
 EPISODES = 150
 CONSOLE_UPDATE_RATE = 500
 
@@ -32,16 +32,16 @@ env = env_right
 env_action_num = 3
 env_state_num = env.getStateSize()
 
-dqn = DQN(GAMMA, MEMORY_SIZE, TARGET_UPDATE, BATCH_SIZE, env_state_num, env_action_num, ewc_importance=200)
+dqn = DQN(GAMMA, MEMORY_SIZE, TARGET_UPDATE, BATCH_SIZE, env_state_num, env_action_num, ewc_importance=1000)
 
 visualizer = Visualizer("DQN Training for Maze")
 episode_durations = []
 
-train(dqn, env_down, episode_durations, 500, CONSOLE_UPDATE_RATE, visualizer, task=1)
+train(dqn, env_down, episode_durations, 200, 1, visualizer, task=1)
 test(dqn.eval_model, env_down)
 
 # train(dqn, env_right, episode_durations, 500, CONSOLE_UPDATE_RATE, visualizer, task=2)
-train_ewc(dqn, env_right, env_down, episode_durations, 500, 10, visualizer, task=2)
+train_ewc(dqn, env_right, env_down, episode_durations, 200, 10, visualizer, task=2)
 test(dqn.eval_model, env_down)
 test(dqn.eval_model, env_right)
 

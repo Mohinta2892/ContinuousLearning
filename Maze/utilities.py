@@ -97,7 +97,7 @@ def train_ewc(dqn: DQN, env, old_env, episode_durations, EPISODES, CONSOLE_UPDAT
 
         # state = extractState(state)
         steps = 0
-
+        
         while True:
             # if episode > 0 and episode % CONSOLE_UPDATE_RATE == 0:
                 # env.render()

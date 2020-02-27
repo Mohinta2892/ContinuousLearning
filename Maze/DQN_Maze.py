@@ -10,9 +10,9 @@ from ReplayMemory import ReplayMemory
 from Transition import Transition
 
 HIDDEN_SIZE = 200
-EPSILON_MAX = 1.0
+EPSILON_MAX = 1
 EPSILON_MIN = 0.05
-EPSILON_DECAY = 0.995
+EPSILON_DECAY = 0.99
 
 class Net(nn.Module):
 
@@ -35,8 +35,8 @@ class DQN(object):
         self.eval_model = Net(self.num_of_states, HIDDEN_SIZE, self.num_of_actions)
         self.target_model = Net(self.num_of_states, HIDDEN_SIZE, self.num_of_actions)
 
-        # self.optimizer = torch.optim.Adam(self.eval_model.parameters(), lr=0.01)
-        self.optimizer = torch.optim.SGD(self.eval_model.parameters(), lr=0.01)
+        self.optimizer = torch.optim.Adam(self.eval_model.parameters(), lr=0.001)
+        # self.optimizer = torch.optim.SGD(self.eval_model.parameters(), lr=0.01)
         self.loss_func = nn.MSELoss()
 
         self.memory_size = memory_size
@@ -66,7 +66,8 @@ class DQN(object):
     def decay_epsilon(self, episode):
         self.epsilon *= EPSILON_DECAY
         self.epsilon = max(EPSILON_MIN, self.epsilon)
-        # print(f"Epsilon is {self.epsilon}, Episode {episode}")
+        if(episode % 20 == 0):
+             print(f"Epsilon is {self.epsilon}, Episode {episode}")
 
     def reset_training(self):
         self.learn_step_counter = 0
