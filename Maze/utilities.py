@@ -7,7 +7,7 @@ import numpy as np
 from Transition import Transition
 from PIL import Image
 from EWC import EWC
-from DQN_Maze import DQN
+from DQN import DQN
 
 def getDevice(forceCPU = False):
     if not forceCPU and torch.cuda.is_available():
@@ -35,7 +35,9 @@ def test(net, env, should_render=True):
         if should_render:
             env.render()
 
-        action = net(state).argmax().item()
+        with torch.no_grad():
+            action = net(state).argmax().item()
+
         next_state, reward, done, info = env.step(action)
         steps_taken += 1
 

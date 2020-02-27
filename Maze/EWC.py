@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from DQN_Maze import Net, DQN
+from DQN import Net, DQN
 from copy import deepcopy
 import random
 from Transition import Transition

@@ -4,81 +4,50 @@ import torch.optim as optim
 import torch.nn as nn
 import torch.nn.functional as F
 
+from utilities import extractState, train, train_ewc, test
+from EmptyEnv import EmptyEnv
 from DQN import DQN
 from visualise import Visualizer
 
+import numpy as np
+
+NAME = "test"
+
 BATCH_SIZE = 32
-GAMMA = 0.95
-TARGET_UPDATE = 20
-MEMORY_SIZE = 15_000
-EPISODES = 500
-CONSOLE_UPDATE_RATE = 50
-# device = getDevice()
+GAMMA = 0.9
+TARGET_UPDATE = 25
+MEMORY_SIZE = 10_000
+EPISODES = 150
+CONSOLE_UPDATE_RATE = 500
 
+env_right = EmptyEnv(size=8, goal_position=[6, 1])
+env_right_reverse = EmptyEnv(size=8, goal_position=[1, 6], agent_start_pos=(6, 6))
+env_down = EmptyEnv(size=8, goal_position=[1, 6])
+env_diagonal = EmptyEnv(size=8, goal_position=[6, 6])
+env_diagonal_reverse = EmptyEnv(size=8, goal_position=[1, 1], agent_start_pos=[6, 6])
 
+env = env_right
 
-env = gym.make('CartPole-v0')
-# env = env.unwrapped
+# Turn Left, Turn Right, Move Forward
+env_action_num = 3
+env_state_num = env.getStateSize()
 
-dqn = DQN(GAMMA, MEMORY_SIZE, TARGET_UPDATE, BATCH_SIZE, env)
+dqn = DQN(GAMMA, MEMORY_SIZE, TARGET_UPDATE, BATCH_SIZE, env_state_num, env_action_num, ewc_importance=1000)
 
-visualizer = Visualizer()
+visualizer = Visualizer("DQN Training for Maze")
 episode_durations = []
 
-for episode in range(EPISODES):
+train(dqn, env_down, episode_durations, 200, 500, visualizer, task=1)
+test(dqn.eval_model, env_down)
 
-    state = env.reset()
-    state = torch.FloatTensor(state).view(-1, 4)
-    steps = 0
+# train(dqn, env_right, episode_durations, 500, CONSOLE_UPDATE_RATE, visualizer, task=2)
+train_ewc(dqn, env_right, env_down, episode_durations, 200, 10, visualizer, task=2)
+test(dqn.eval_model, env_down)
+test(dqn.eval_model, env_right)
 
-    while True:
-        if episode % CONSOLE_UPDATE_RATE == 0:
-            env.render()
+dqn.save(f"models/{NAME}.pth")
+visualizer.plot_durations(episode_durations)
+visualizer.save_plot(f"images/{NAME}.png")
 
-        action = dqn.choose_action(state)
 
-        next_state, reward, done, info = env.step(action.item())
 
-        x, x_dot, theta, theta_dot = next_state
-        r1 = (env.x_threshold - abs(x)) / env.x_threshold - 0.6
-        r2 = (env.theta_threshold_radians - abs(theta)) / env.theta_threshold_radians - 0.5
-        reward = r1 + r2
-        
-
-        # print(reward)
-
-        if done:
-            reward = -2.0
-
-        reward = torch.tensor([[reward]])
-        next_state = torch.FloatTensor(next_state).view(-1, 4)
-
-        dqn.store_transition(state, action, reward, next_state)
-
-        steps += 1
-        
-        dqn.learn()                
-
-        if done: 
-            if episode % CONSOLE_UPDATE_RATE == 0:
-                print(f"{episode} Episode finished after {steps} steps.")
-            break;
-
-        if steps % 10_000 == 0:
-            print(f"Stopping as it runs infinitely.")
-            break;
-
-        state = next_state
-
-    dqn.decay_epsilon()
-    episode_durations.append(steps)
-
-    if episode % CONSOLE_UPDATE_RATE == 0:
-        visualizer.plot_durations(episode_durations)
-        visualizer.save_plot("cart_pole.png")
-
-    if steps % 10_000 == 0:
-        break;
-
-dqn.save("eval_model.pth")
-visualizer.save_plot("cart_pole.png")
