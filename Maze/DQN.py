@@ -74,7 +74,7 @@ class DQN(object):
         self.epsilon = EPSILON_MAX
 
         # Save a batch of old memories
-        transitions = self.memory.sample(self.batch_size)
+        transitions = self.memory.sample(self.batch_size * 2)
         self.old_memory = self.old_memory + transitions
 
         self.memory = ReplayMemory(self.memory_size)

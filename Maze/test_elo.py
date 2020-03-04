@@ -6,8 +6,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from utilities import extractState, train, test
-from EmptyEnv import EmptyEnv
-from EgoEnv import EgoEnv
+from environments.EmptyEnv import EmptyEnv
+from environments.CrossEnv import CrossEnv
 
 from DQN import DQN, Net
 from visualise import Visualizer
@@ -15,8 +15,8 @@ from visualise import Visualizer
 NAME = "ego_alo_stable"
 
 # Init env
-ego = EgoEnv(False)
-alo = EgoEnv(True)
+ego = CrossEnv(False)
+alo = CrossEnv(True)
 
 env_shape = ego.observation_space['image'].shape
 

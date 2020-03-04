@@ -6,7 +6,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from utilities import extractState, train, test
-from EmptyEnv import EmptyEnv
+from environments.EmptyEnv import EmptyEnv
+from environments.CrossEnv import CrossEnv
 from DQN import DQN, Net
 from visualise import Visualizer
 

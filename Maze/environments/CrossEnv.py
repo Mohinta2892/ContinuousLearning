@@ -4,7 +4,7 @@ from gym_minigrid.register import register
 import torch
 import numpy as np
 
-class EgoEnv(MiniGridEnv):
+class CrossEnv(MiniGridEnv):
     """
     Empty grid environment, no obstacles, sparse reward
 
@@ -23,7 +23,7 @@ class EgoEnv(MiniGridEnv):
 
         super().__init__(
             grid_size=size,
-            max_steps=50,
+            max_steps=100,
         )
 
     def _gen_grid(self, width, height):

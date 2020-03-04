@@ -4,25 +4,26 @@ import torch.optim as optim
 import torch.nn as nn
 import torch.nn.functional as F
 
-from utilities import extractState, train, train_ewc, test
-from EmptyEnv import EmptyEnv
-from EgoEnv import EgoEnv
+from utilities import train, test
+from environments.EmptyEnv import EmptyEnv
+from environments.CrossEnv import CrossEnv
 from DQN import DQN
-from visualise import Visualizer
+from visualise import visualise_data
 
 import numpy as np
 
-NAME = "test"
+NAME = "crossShapeNoEWC"
 
 BATCH_SIZE = 64
 GAMMA = 0.9
 TARGET_UPDATE = 25
-MEMORY_SIZE = 15_000
-EPISODES = 150
-CONSOLE_UPDATE_RATE = 500
+MEMORY_SIZE = 5_000
+EPISODES = 300
+DISPLAY_FREQUENCY = 50
+TEST_FREQUENCY = 2
 
-env_ego = EgoEnv(False)
-env_alo = EgoEnv(True)
+env_ego = CrossEnv(False)
+env_alo = CrossEnv(True)
 
 # Turn Left, Turn Right, Move Forward
 env_action_num = 3
@@ -30,20 +31,31 @@ env_state_num = env_ego.getStateSize()
 
 dqn = DQN(GAMMA, MEMORY_SIZE, TARGET_UPDATE, BATCH_SIZE, env_state_num, env_action_num, ewc_importance=1500)
 
-visualizer = Visualizer("DQN Training for Maze")
 episode_durations = []
+test_durations = []
 
-train(dqn, env_ego, episode_durations, 200, 100, visualizer, task=1)
-test(dqn.eval_model, env_ego)
+ep_dur, test_dur = train(dqn, [env_ego], EPISODES, TEST_FREQUENCY, DISPLAY_FREQUENCY, usingEWC=False)
+episode_durations.append(ep_dur)
+test_durations.append([])
+for index, test in enumerate(test_dur):
+    test_durations[index] += test
 
-# train(dqn, env_right, episode_durations, 500, CONSOLE_UPDATE_RATE, visualizer, task=2)
-train_ewc(dqn, env_alo, env_ego, episode_durations, 200, 10, visualizer, task=2)
-test(dqn.eval_model, env_ego)
-test(dqn.eval_model, env_alo)
+print(f"##################################################")
+print(f"##################################################")
+print(f"################# Starting task 2 ################")
+print(f"##################################################")
+print(f"##################################################")
 
+
+ep_dur, test_dur = train(dqn, [env_ego, env_alo], EPISODES, TEST_FREQUENCY, DISPLAY_FREQUENCY, usingEWC=False)
+episode_durations.append(ep_dur)
+test_durations.append([])
+for index, test in enumerate(test_dur):
+    test_durations[index] += test
+
+np.save(f"data/{NAME}_episode_durations", np.array(episode_durations))
+np.save(f"data/{NAME}_test_durations", np.array(test_durations))
 dqn.save(f"models/{NAME}.pth")
-visualizer.plot_durations(episode_durations)
-visualizer.save_plot(f"images/{NAME}.png")
-
+visualise_data(NAME, TEST_FREQUENCY)
 
 
