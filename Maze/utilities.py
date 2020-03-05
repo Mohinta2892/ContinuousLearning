@@ -37,11 +37,11 @@ def test(net, env, should_render=True):
         with torch.no_grad():
             action = net(state).argmax().item()
 
-        next_state, reward, done, info = env.step(action)
+        # next_state, reward, done, info = env.step(action)
 
-        steps_taken += 1
-        isFinished = done
-        state = env.extractState()
+        # steps_taken += 1
+        # isFinished = done
+        # state = env.extractState()
 
     return steps_taken
 

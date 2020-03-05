@@ -7,12 +7,13 @@ import torch.nn.functional as F
 from utilities import train, test
 from environments.EmptyEnv import EmptyEnv
 from environments.CrossEnv import CrossEnv
+from environments.TShapedEnv import TShapedEnv
 from DQN import DQN
 from visualise import visualise_data
 
 import numpy as np
 
-NAME = "crossShapeNoEWC"
+NAME = "tShapedEWC"
 
 BATCH_SIZE = 64
 GAMMA = 0.9
@@ -22,8 +23,8 @@ EPISODES = 300
 DISPLAY_FREQUENCY = 50
 TEST_FREQUENCY = 2
 
-env_ego = CrossEnv(False)
-env_alo = CrossEnv(True)
+env_ego = TShapedEnv(False)
+env_alo = TShapedEnv(True)
 
 # Turn Left, Turn Right, Move Forward
 env_action_num = 3
@@ -47,7 +48,7 @@ print(f"##################################################")
 print(f"##################################################")
 
 
-ep_dur, test_dur = train(dqn, [env_ego, env_alo], EPISODES, TEST_FREQUENCY, DISPLAY_FREQUENCY, usingEWC=False)
+ep_dur, test_dur = train(dqn, [env_ego, env_alo], EPISODES, TEST_FREQUENCY, DISPLAY_FREQUENCY, usingEWC=True)
 episode_durations.append(ep_dur)
 test_durations.append([])
 for index, test in enumerate(test_dur):
@@ -56,6 +57,6 @@ for index, test in enumerate(test_dur):
 np.save(f"data/{NAME}_episode_durations", np.array(episode_durations))
 np.save(f"data/{NAME}_test_durations", np.array(test_durations))
 dqn.save(f"models/{NAME}.pth")
-visualise_data(NAME, TEST_FREQUENCY)
+visualise_data(NAME, TEST_FREQUENCY, [7, 7])
 
 
