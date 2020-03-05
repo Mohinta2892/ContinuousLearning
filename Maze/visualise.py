@@ -63,8 +63,9 @@ def visualise_data(NAME, TEST_FREQUENCY, min_steps):
     episodes_per_task = len(episode_durations[0])
     # episode_durations = episode_durations.reshape(-1, )
 
-    fig1, ax1 = plt.subplots(figsize=(12, 7))
-    fig2, ax2 = plt.subplots(figsize=(12, 7))
+    # fig1, ax1 = plt.subplots(figsize=(12, 7))
+    # fig2, ax2 = plt.subplots(figsize=(12, 7))
+    fig, (ax1, ax2) = plt.subplots(ncols=1, nrows=2, figsize=(12, 14))
 
     ax1.set_title("Steps done per episode during DQN Training of 2 maze tasks")
     ax1.set_xlabel("Episodes")
@@ -80,16 +81,18 @@ def visualise_data(NAME, TEST_FREQUENCY, min_steps):
     ax2.set_ylabel("Accuracy")
 
     test_episodes = (episodes_per_task // TEST_FREQUENCY)
-    episode_X = np.arange(test_episodes * 2)
-    episode_X1 = np.arange(test_episodes) + test_episodes
+    episode_X = np.arange(0, episodes_per_task*2, TEST_FREQUENCY)
+    episode_X1 = np.arange(episodes_per_task, episodes_per_task*2, TEST_FREQUENCY)
     ax2.plot(episode_X, accuracy[0], linewidth=3, label='Task 1')
     ax2.plot(episode_X1, accuracy[1], linewidth=3, label='Task 2')
     ax2.legend(loc='upper right')
 
-    fig1.savefig(f"images/{NAME}_training.png")
-    fig2.savefig(f"images/{NAME}_testing.png")
-    plt.show()
+    # fig1.savefig(f"images/{NAME}_training.png")
+    # fig2.savefig(f"images/{NAME}_testing.png")
+    fig.tight_layout()
+    fig.savefig('temp')
+    # plt.show()
 
 
-visualise_data(NAME="empty", TEST_FREQUENCY=2, min_steps=[6, 5])
+visualise_data(NAME="emptyNoEWC", TEST_FREQUENCY=2, min_steps=[6, 5])
 
