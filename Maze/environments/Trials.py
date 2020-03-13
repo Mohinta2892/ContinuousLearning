@@ -4,7 +4,7 @@ from gym_minigrid.register import register
 import torch
 import numpy as np
 
-class TShapedEnv(MiniGridEnv):
+class TrialEnv(MiniGridEnv):
     """
     Empty grid environment, no obstacles, sparse reward
 
@@ -15,13 +15,20 @@ class TShapedEnv(MiniGridEnv):
 
     """
 
-    def __init__(self, is_reversed, size=9):
-        # self.agent_start_pos = (4,7)
-        self.goal_position = (4, 7)
-        self.agent_start_dir = 2 if is_reversed else 0
+    DIR_UP    = 3
+    DIR_DOWN  = 1
+    DIR_LEFT  = 2
+    DIR_RIGHT = 0
 
-        self.agent_start_pos = (7, 4) if is_reversed else (1, 4)
-        self.is_reversed = is_reversed
+    NORTH = (4, 1)
+    SOUTH = (4, 7)
+    EAST  = (7, 4)
+    WEST  = (1, 4)
+
+    def __init__(self, agent_pos, goal_position, size=9):
+        self.agent_start_pos = agent_pos
+        self.agent_start_dir = self.DIR_UP if agent_pos == self.SOUTH else self.DIR_DOWN
+        self.goal_position = goal_position
 
         super().__init__(
             grid_size=size,
@@ -29,19 +36,27 @@ class TShapedEnv(MiniGridEnv):
         )
 
     def _gen_grid(self, width, height):
+
         # Create an empty grid
         self.grid = Grid(width, height)
 
-        # Generate walls
+        # Generate borders
         self.grid.wall_rect(0, 0, width, height)
 
-        for x in [1,2,3,4,5,6,7]:
+        # Generate PLUS
+        for x in [1,2,3,5,6,7]:
             self.grid.vert_wall(x, 1, 3)
 
-        for x in [1,2,3, 5,6,7]:
+        for x in [1,2,3,5,6,7]:
             self.grid.vert_wall(x, 5, 3)
 
-        # Place a goal square in the bottom-right corner
+        # Generate T-shaped
+        if self.agent_start_pos == self.SOUTH:
+            self.grid.vert_wall(4, 1, 3)
+        else:
+            self.grid.vert_wall(4, 5, 3)
+
+        # Place goal
         self.put_obj(Goal(), self.goal_position[0], self.goal_position[1])
 
         # Place the agent
@@ -56,7 +71,6 @@ class TShapedEnv(MiniGridEnv):
         grid_mask = np.array([s != None for s in self.grid.grid])
         self.grid_data = np.zeros([self.grid.width * self.grid.height])
         self.grid_data[grid_mask] = 1
-
         self.grid_data[self.goal_position[1] * self.grid.width + self.goal_position[0]] = 2
 
     def getStateSize(self):
@@ -67,23 +81,24 @@ class TShapedEnv(MiniGridEnv):
 
         # Update agent position and direction
         state[self.agent_pos[1] * self.grid.width + self.agent_pos[0]] = 3
-        # state[0] = 10 if self.is_reversed else -10
-        # state[-1] = 10 if self.is_reversed else -10
-
+        # state = np.append(state, self.agent_dir)
         # state = np.append(state, self.agent_pos[0])
         # state = np.append(state, self.agent_pos[1])
         state = np.append(state, self.agent_dir)
-        # state = np.append(state, 10 if self.is_reversed else -10)
-        # state = np.append(state, 10 if self.is_reversed else -10)
-        # state = np.append(state, 10 if self.is_reversed else -10)
-        # state = np.append(state, 10 if self.is_reversed else -10)
-        # state = np.append(state, 10 if self.is_reversed else -10)
-        # state = np.append(state, 10 if self.is_reversed else -10)
-        # state = np.append(state, 10 if self.is_reversed else -10)
-        # state = np.append(state, 10 if self.is_reversed else -10)
-        # state = np.append(state, 10 if self.is_reversed else -10)
 
-        
+
+        state[0] = 10 if self.agent_start_pos == self.NORTH else -10
+        state[1] = 10 if self.agent_start_pos == self.NORTH else -10
+        state[9] = 10 if self.agent_start_pos == self.NORTH else -10
+        state[10] = 10 if self.agent_start_pos == self.NORTH else -10
+
+        # print(state)
+
         return torch.FloatTensor([state])
         
-        
+    def _reward(self):
+        """
+        Compute the reward to be given upon success
+        """
+
+        return 1 - 0.9 * (self.step_count / self.max_steps)

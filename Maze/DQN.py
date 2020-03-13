@@ -38,6 +38,7 @@ class DQN(object):
         self.optimizer = torch.optim.Adam(self.eval_model.parameters(), lr=0.001)
         # self.optimizer = torch.optim.SGD(self.eval_model.parameters(), lr=0.01)
         self.loss_func = nn.MSELoss()
+        # self.loss_func = nn.SmoothL1Loss()
 
         self.memory_size = memory_size
         self.memory = ReplayMemory(memory_size)

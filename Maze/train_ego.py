@@ -8,29 +8,39 @@ from utilities import train, test
 from environments.EmptyEnv import EmptyEnv
 from environments.CrossEnv import CrossEnv
 from environments.TShapedEnv import TShapedEnv
+from environments.Trials import TrialEnv
 from DQN import DQN
 from visualise import visualise_data
 
 import numpy as np
 
-NAME = "tShapedEWC"
+NAME = "test"
 
 BATCH_SIZE = 64
 GAMMA = 0.9
-TARGET_UPDATE = 25
+TARGET_UPDATE = 10
 MEMORY_SIZE = 5_000
-EPISODES = 300
-DISPLAY_FREQUENCY = 50
-TEST_FREQUENCY = 2
+EPISODES = 500
+DISPLAY_FREQUENCY = 500
+TEST_FREQUENCY = 5
 
-env_ego = TShapedEnv(False)
-env_alo = TShapedEnv(True)
+# env_ego = TShapedEnv(False)
+# env_alo = TShapedEnv(True)
+
+env_ego = TrialEnv(TrialEnv.NORTH, TrialEnv.WEST)
+env_alo = TrialEnv(TrialEnv.SOUTH, TrialEnv.WEST)
+
+# env_ego = TrialEnv(TrialEnv.NORTH, TrialEnv.WEST)
+# env_alo = TrialEnv(TrialEnv.NORTH, TrialEnv.EAST)
+
+# env_ego = CrossEnv(False)
+# env_alo = CrossEnv(True)
 
 # Turn Left, Turn Right, Move Forward
 env_action_num = 3
 env_state_num = env_ego.getStateSize()
 
-dqn = DQN(GAMMA, MEMORY_SIZE, TARGET_UPDATE, BATCH_SIZE, env_state_num, env_action_num, ewc_importance=1500)
+dqn = DQN(GAMMA, MEMORY_SIZE, TARGET_UPDATE, BATCH_SIZE, env_state_num, env_action_num, ewc_importance=2000)
 
 episode_durations = []
 test_durations = []
