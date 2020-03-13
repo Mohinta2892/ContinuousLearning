@@ -12,7 +12,7 @@ from Transition import Transition
 HIDDEN_SIZE = 200
 EPSILON_MAX = 1
 EPSILON_MIN = 0.05
-EPSILON_DECAY = 0.99
+EPSILON_DECAY = 0.98
 
 class Net(nn.Module):
 
@@ -42,6 +42,8 @@ class DQN(object):
         self.memory_size = memory_size
         self.memory = ReplayMemory(memory_size)
         self.old_memory = []
+        self.learned_tasks = 0
+
         self.target_udpate_counter = target_update_counter
         self.learn_step_counter = 0
         self.batch_size = batch_size
@@ -77,6 +79,7 @@ class DQN(object):
         transitions = self.memory.sample(self.batch_size * 2)
         self.old_memory = self.old_memory + transitions
 
+        # Reset memory
         self.memory = ReplayMemory(self.memory_size)
 
     def learn(self, ewc=None):

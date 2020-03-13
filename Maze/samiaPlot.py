@@ -23,8 +23,9 @@ ego_cnt =[[1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0]
 legend_properties = {'weight':'bold','size': 12}
 	
 trial_num=[]
-reward_val1=np.zeros(500)
+reward_val1 = np.zeros(500)
 reward_val=[]
+
 for i in allo_cnt:
    trial_num.append(i[0])
    reward_val.append(i[1])

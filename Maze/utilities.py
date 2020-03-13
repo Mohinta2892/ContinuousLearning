@@ -37,11 +37,11 @@ def test(net, env, should_render=True):
         with torch.no_grad():
             action = net(state).argmax().item()
 
-        # next_state, reward, done, info = env.step(action)
+        next_state, reward, done, info = env.step(action)
 
         steps_taken += 1
-        # isFinished = done
-        # state = env.extractState()
+        isFinished = done
+        state = env.extractState()
 
     return steps_taken
 
@@ -109,3 +109,54 @@ def train(dqn, envs, EPISODES, TEST_FREQUENCY, DISPLAY_FREQUENCY, usingEWC=False
             print(f"##################################################")
 
     return episode_durations, test_durations
+
+
+def train(dqn: DQN, env, EPISODES, DISPLAY_FREQUENCY, usingEWC=True):
+
+    episode_durations = []
+
+    # Reset the DQN if the network is not new
+    if dqn.learned_tasks > 0:
+        dqn.reset_training()
+
+    if dqn.learned_tasks > 0 and usingEWC:
+        # Calculate Fisher by creating the EWC object
+        ewc = EWC(dqn)
+
+    for episode in range(EPISODES):
+        state = env.reset()
+        state = env.extractState()
+
+        steps = 0
+        isFinished = False
+
+        while not isFinished:
+            if episode > 0 and episode % DISPLAY_FREQUENCY == 0:
+                env.render()
+
+            action = dqn.choose_action(state)
+
+            next_state, reward, done, info = env.step(action.item())
+            reward = torch.FloatTensor([[reward]])
+            next_state = env.extractState()
+
+            dqn.store_transition(state, action, reward, next_state)
+
+            # Update DQN
+            if dqn.learned_tasks > 0 and usingEWC:
+                dqn.learn(ewc)
+            else:
+                dqn.learn()
+
+            state = next_state
+            steps += 1
+            isFinished = done
+
+        dqn.decay_epsilon(episode)
+
+        episode_durations.append(steps)
+        if episode % DISPLAY_FREQUENCY == 0:
+            print(f"{episode+1} Episode finished after {steps} steps.")
+
+    dqn.learned_tasks += 1
+    return episode_durations

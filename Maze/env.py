@@ -1,5 +1,6 @@
 import pandas as pd
 from DQN import DQN
+from utilities import *
 from environments.TShapedEnv import TShapedEnv
 
 csv_path = 'environments/configs.csv'
@@ -32,6 +33,14 @@ def run(env):
 
 def get_maze_config(stradegy, start_zone):
 
+    # START ZONE
+    # 1 - NORTH
+    # 2 - SOUTH
+
+    # STRADEGY
+    # 1/2 - ALLOCENTRIC
+    # 3/4 - EGOCENTRIC
+
     if start_zone == 1:
         if stradegy == 1: return 1
         if stradegy == 2: return 2
@@ -48,14 +57,6 @@ def get_maze_config(stradegy, start_zone):
     return -1
 
 
-# START ZONE
-# 1 - NORTH
-# 2 - SOUTH
-
-# STRADEGY
-# 1/2 - ALLOCENTRIC
-# 3/4 - EGOCENTRIC
-
 # GENERATE MAZES
 environments = []
 for scenario in scenarios:
@@ -66,16 +67,36 @@ for scenario in scenarios:
 trials = pd.read_csv(csv_path).T.to_dict().values()
 
 # GET DQN NET
-dqn = DQN(GAMMA, MEMORY_SIZE, TARGET_UPDATE, BATCH_SIZE, env_state_num, env_action_num, ewc_importance=1500)
+env_action_num = 3
+env_states_num = environments[0].getStateSize()
+dqn = DQN(  gamma=0.9,
+            memory_size=10_000,
+            target_update_counter=25,
+            batch_size=32,
+            num_of_states=env_states_num,
+            num_of_actions=env_action_num,
+            ewc_importance=1000 )
 
 
 # RUN TRIALS
+seen_environments = set()
+trial_steps = []
 for trial in trials:
     stradegy = trial["Strategy"]
     start_zone = trial["Start zone"]
 
     config = get_maze_config(stradegy, start_zone)
     env = environments[config]
+
+    if not env in seen_environments:
+        train(dqn, env, EPISODES=200, DISPLAY_FREQUENCY=50)
+
+    test_steps = test(dqn.eval_model, env, should_render=False)
+    trial_steps.append(test_steps)
+    print(f"TRIAL STEPS: {trial_steps}")
+
+    seen_environments.add(env)
+
 
 
 

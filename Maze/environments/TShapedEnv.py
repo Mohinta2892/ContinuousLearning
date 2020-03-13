@@ -82,8 +82,6 @@ class TShapedEnv(MiniGridEnv):
         # Update agent position and direction
         state[self.agent_pos[1] * self.grid.width + self.agent_pos[0]] = 3
         state = np.append(state, self.agent_dir)
-
-
         
         return torch.FloatTensor([state])
         
