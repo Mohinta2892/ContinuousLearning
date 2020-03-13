@@ -7,39 +7,35 @@ import torch.nn.functional as F
 from utilities import train, test
 from environments.EmptyEnv import EmptyEnv
 from environments.CrossEnv import CrossEnv
+from environments.TShapedEnv import TShapedEnv
 from DQN import DQN
 from visualise import visualise_data
 
 import numpy as np
 
-NAME = "test"
+NAME = "tShapedEWC"
 
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 GAMMA = 0.9
 TARGET_UPDATE = 25
-MEMORY_SIZE = 10_000
-EPISODES = 150
+MEMORY_SIZE = 5_000
+EPISODES = 300
 DISPLAY_FREQUENCY = 50
 TEST_FREQUENCY = 2
 
-env_right = EmptyEnv(size=8, goal_position=[6, 1])
-env_right_reverse = EmptyEnv(size=8, goal_position=[1, 6], agent_start_pos=(6, 6))
-env_down = EmptyEnv(size=8, goal_position=[1, 6])
-env_diagonal = EmptyEnv(size=8, goal_position=[6, 6])
-env_diagonal_reverse = EmptyEnv(size=8, goal_position=[1, 1], agent_start_pos=[6, 6])
-
-env = env_right
+env_ego = TShapedEnv(False)
+env_alo = TShapedEnv(True)
 
 # Turn Left, Turn Right, Move Forward
 env_action_num = 3
-env_state_num = env.getStateSize()
+env_state_num = env_ego.getStateSize()
 
-dqn = DQN(GAMMA, MEMORY_SIZE, TARGET_UPDATE, BATCH_SIZE, env_state_num, env_action_num, ewc_importance=1000)
+dqn = DQN(GAMMA, MEMORY_SIZE, TARGET_UPDATE, BATCH_SIZE, env_state_num, env_action_num, ewc_importance=1500)
 
 episode_durations = []
 test_durations = []
 
-ep_dur, test_dur = train(dqn, [env_down], 200, TEST_FREQUENCY, DISPLAY_FREQUENCY, usingEWC=False)
+ep_dur, test_dur = train(dqn, [env_ego], EPISODES, TEST_FREQUENCY, DISPLAY_FREQUENCY, usingEWC=False)
 episode_durations.append(ep_dur)
 test_durations.append([])
 for index, test in enumerate(test_dur):
@@ -52,7 +48,7 @@ print(f"##################################################")
 print(f"##################################################")
 
 
-ep_dur, test_dur = train(dqn, [env_down, env_right], 200, TEST_FREQUENCY, DISPLAY_FREQUENCY, usingEWC=True)
+ep_dur, test_dur = train(dqn, [env_ego, env_alo], EPISODES, TEST_FREQUENCY, DISPLAY_FREQUENCY, usingEWC=True)
 episode_durations.append(ep_dur)
 test_durations.append([])
 for index, test in enumerate(test_dur):
@@ -61,8 +57,6 @@ for index, test in enumerate(test_dur):
 np.save(f"data/{NAME}_episode_durations", np.array(episode_durations))
 np.save(f"data/{NAME}_test_durations", np.array(test_durations))
 dqn.save(f"models/{NAME}.pth")
-
-visualise_data(NAME, TEST_FREQUENCY)
-
+visualise_data(NAME, TEST_FREQUENCY, [7, 7])
 
 

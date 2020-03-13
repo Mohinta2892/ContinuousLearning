@@ -39,14 +39,14 @@ def test(net, env, should_render=True):
 
         # next_state, reward, done, info = env.step(action)
 
-        # steps_taken += 1
+        steps_taken += 1
         # isFinished = done
         # state = env.extractState()
 
     return steps_taken
 
 
-def train(dqn, envs, EPISODES, TEST_FREQUENCY, DISPLAY_FREQUENCY, usingEWC=False):
+def train(dqn, envs, EPISODES, TEST_FREQUENCY, DISPLAY_FREQUENCY, usingEWC=False, test=True):
 
     firstTimeTraining = len(envs) == 1
     episode_durations = []
@@ -100,7 +100,7 @@ def train(dqn, envs, EPISODES, TEST_FREQUENCY, DISPLAY_FREQUENCY, usingEWC=False
         episode_durations.append(steps)
 
         # Collect test data for each env
-        if episode % TEST_FREQUENCY == 0:
+        if test is True and episode % TEST_FREQUENCY == 0:
             for index, test_env in enumerate(envs):
                 test_steps = test(dqn.eval_model, test_env, should_render=False)
                 test_durations[index].append(test_steps)
