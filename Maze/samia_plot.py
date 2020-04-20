@@ -19,17 +19,26 @@ trials = pd.read_csv(csv_path).T.to_dict().values()
 # ego_cnt = [x[1] for x in ego_cnt]
 
 sections = []
-last_stradegy = -1
+last_task = -1
+last_strategy = -1
+strategy_switches = []
+
+
 for trial in trials:
    trialID = trial["Trial"]
-   stradegy = trial["Strategy"]
-   stradegy = 0 if (stradegy == 1 or stradegy == 2) else 1
+   stradegyID = trial["Strategy"]      
 
-   if last_stradegy == -1 or last_stradegy != stradegy:
+   stradegy = 0 if (stradegyID == 1 or stradegyID == 2) else 1
+
+   if last_task == -1 or last_task != stradegy:
       #  new stradegy => open new section
-      last_stradegy = stradegy
+      last_task = stradegy
       sections.append([])
       sections[-1].append(stradegy)
+      last_strategy = stradegyID
+   elif last_strategy != stradegyID:
+      strategy_switches.append(trialID)
+      last_strategy = stradegyID
 
    sections[-1].append(trialID)
 
@@ -48,10 +57,15 @@ for offset, section in enumerate(sections):
 
    color = 'r' if isAllo else 'b'
 
-   ax.plot(np.arange(Xfrom, Xto), Y[Xfrom-1-offset : Xto-1-offset], color=color, linestyle='--', linewidth=0.4, label= "Allocentric" if isAllo else "Egocentric")
+   ax.plot(np.arange(Xfrom, Xto), Y[Xfrom-1-offset : Xto-1-offset], color=color, linestyle='--', linewidth=0.5, label= "Allocentric" if isAllo else "Egocentric")
    ax.plot(np.arange(Xfrom, Xto), Y_avg, color=color, linewidth=2, label= "Allocentric Average" if isAllo else "Egocentric Average")
-   ax.axvline(Xto, color='purple', linestyle='--', linewidth=0.4, label="Task Switch")
 
+for section in sections:
+   X = section[-1]
+   ax.axvline(X, color='purple', linestyle='--', linewidth=1, label="Task Switch")
+
+for switch in strategy_switches:
+   ax.axvline(switch, color='green', linestyle='--', linewidth=1, label="Within task switch")
 
 ax.hlines(0.5,1,542,linestyles='dashed',linewidth=1, color='k', label='Chance Level')
 

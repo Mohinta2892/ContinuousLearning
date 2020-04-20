@@ -26,6 +26,9 @@ class Net(nn.Module):
         x = self.fc2(x)
         return x
 
+
+
+
 class DQN(object):
 
     def __init__(self, gamma, memory_size, target_update_counter, batch_size, num_of_states, num_of_actions, ewc_importance=28):
@@ -58,8 +61,10 @@ class DQN(object):
 
         sample = random.random()
 
+        action = self.eval_model(state).argmax().view(1,1)
+
         if sample > self.epsilon:
-            return self.eval_model(state).argmax().view(1,1)
+            return action
         else:
             return torch.tensor([[random.randrange(self.num_of_actions)]], dtype=torch.long)
 

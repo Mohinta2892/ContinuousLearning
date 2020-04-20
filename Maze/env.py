@@ -3,6 +3,7 @@ import csv
 
 from DQN import DQN
 from utilities import *
+import torch.nn.functional as F
 from environments.Trials import TrialEnv
 
 
@@ -68,8 +69,6 @@ for scenario in scenarios:
 
 NAME = "sc03"
 
-showEnv(environments[6])
-
 # READ TRIALS
 # csv_path = 'environments/configs.csv'
 csv_path = f"data/trials/{NAME}.csv"
@@ -87,33 +86,17 @@ dqn = DQN(  gamma=0.9,
             ewc_importance=1000 )
 
 
+activations = []
+def get_activation():
+    def hook(model, input, output):
+        if(len(output) == 1):
+            activations.append(F.relu(output.detach()[0]))
+    return hook
 
-# RUN TRIALS
-seen_environments = set()
-trained_env = np.zeros(8)
-trial_outcomes = []
+dqn.eval_model.fc1.register_forward_hook(get_activation())
 
-# for trial in trials:
-#     stradegy = trial["Strategy"]
-#     start_zone = trial["Start zone"]
 
-#     config = get_maze_config(stradegy, start_zone)
-#     env = environments[config]
 
-#     # if not env in seen_environments:
-#     if trained_env[config] < 3:
-#         print("#########################################################")
-#         # print(f"Trial: {trial['Trial']} is a new config: {config}. Training...")
-#         print(f"Trial: {trial['Trial']} is training config: {config} for the {trained_env[config]} time. Training...")
-#         trainSmart(dqn, env, EPISODES=200, DISPLAY_FREQUENCY=50, config=config)
-
-#     test_steps = test(dqn.eval_model, env, should_render=False)
-#     # print(f"TRIAL STEPS: {trial_steps}")
-
-#     # seen_environments.add(env)
-#     trained_env[config] += 1
-#     outcome = {"Trial": trial['Trial'], "Stradegy": config, "Steps": test_steps}
-#     trial_outcomes.append(outcome)
 
 # STRADEGY
 # 1/2 - ALLOCENTRIC
@@ -121,7 +104,9 @@ trial_outcomes = []
 
 ego = []
 allo = []
-last_strategy = 3
+last_strategy = 3   # First from sc03...
+trial_outcomes = []
+activation_track = []
 ewc = None
 
 total = 0
@@ -129,6 +114,7 @@ total = 0
 for trial in trials:
     stradegy = trial["Strategy"]
     start_zone = trial["Start zone"]
+    activations = []
 
     config = get_maze_config(stradegy, start_zone)
     env = environments[config]
@@ -145,6 +131,12 @@ for trial in trials:
     if finished: total += 1;
     outcome = {"Trial": trial['Trial'], "Finished": finished}
 
+    # TRACK ACTIVATIONS FOR MIDDLE LAYER
+    for timestep, activation in enumerate(activations):
+        for ind, neuron in enumerate(activation):
+            track = {"Trial": trial["Trial"], "Strategy": stradegy, "Timestep": timestep, "Neuron": ind+1, "Activation": neuron.item()}
+            activation_track.append(track)
+
     if(stradegy == 1 or stradegy == 2):
         allo.append([trial['Trial'], int(finished)])
         ego.append([trial['Trial'], 0])
@@ -160,17 +152,26 @@ for trial in trials:
 print(len(allo))
 print(len(ego))
 print(total)
+np.save("test2", np.array(activation_track))
 np.save(f"data/trials/{NAME}_allo", np.array(allo))
 np.save(f"data/trials/{NAME}_ego", np.array(ego))
 
+print("Done saving 1")
 # SAVE OUTPUT
-with open('trial_finished.txt', 'w', newline='') as output_file:
-    keys = trial_outcomes[0].keys()
+# with open('trial_finished.txt', 'w', newline='') as output_file:
+#     keys = trial_outcomes[0].keys()
+#     dict_writer = csv.DictWriter(output_file, keys)
+#     dict_writer.writeheader()
+#     dict_writer.writerows(trial_outcomes)
+
+with open('tracking2.csv', 'w', newline='') as output_file:
+    keys = activation_track[0].keys()
     dict_writer = csv.DictWriter(output_file, keys)
     dict_writer.writeheader()
-    dict_writer.writerows(trial_outcomes)
+    dict_writer.writerows(activation_track)
 
 
+print("Done saving 2")
 
 
     
