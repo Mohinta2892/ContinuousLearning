@@ -10,9 +10,9 @@ from ReplayMemory import ReplayMemory
 from Transition import Transition
 
 HIDDEN_SIZE = 200
-EPSILON_MAX = 1
+EPSILON_MAX = 0.3
 EPSILON_MIN = 0.05
-EPSILON_DECAY = 0.99
+EPSILON_DECAY = 0.9
 
 class Net(nn.Module):
 
@@ -38,11 +38,13 @@ class DQN(object):
         self.optimizer = torch.optim.Adam(self.eval_model.parameters(), lr=0.001)
         # self.optimizer = torch.optim.SGD(self.eval_model.parameters(), lr=0.01)
         self.loss_func = nn.MSELoss()
+        # self.loss_func = nn.MS
         # self.loss_func = nn.SmoothL1Loss()
 
         self.memory_size = memory_size
         self.memory = ReplayMemory(memory_size)
         self.old_memory = []
+        self.learned_tasks = 0
         self.target_udpate_counter = target_update_counter
         self.learn_step_counter = 0
         self.batch_size = batch_size
@@ -64,18 +66,18 @@ class DQN(object):
     def store_transition(self, state, action, reward, next_state):
         self.memory.push(state, action, next_state, reward)
 
-    def decay_epsilon(self, episode):
+    def decay_epsilon(self):
         self.epsilon *= EPSILON_DECAY
         self.epsilon = max(EPSILON_MIN, self.epsilon)
-        if(episode % 20 == 0):
-             print(f"Epsilon is {self.epsilon}, Episode {episode}")
+        # if(episode % 20 == 0):
+            #  print(f"Epsilon is {self.epsilon}, Episode {episode}")
 
     def reset_training(self):
         self.learn_step_counter = 0
         self.epsilon = EPSILON_MAX
 
         # Save a batch of old memories
-        transitions = self.memory.sample(self.batch_size * 2)
+        transitions = self.memory.sample(self.batch_size)
         self.old_memory = self.old_memory + transitions
 
         self.memory = ReplayMemory(self.memory_size)

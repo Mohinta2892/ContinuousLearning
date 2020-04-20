@@ -8,4 +8,26 @@
  1. 1. 1. 1. 1. 1. 1. 1. 1.
  1. 1. 1. 1. 1. 1. 1. 1. 1. 1.]
 
- 
+ 0 - EMPTY
+ 1 - WALL
+ 2 - GOAL
+ 3 - AGENT
+
+ 10  - NORTH
+ -10 - SOUTH
+
+ ALO
+ 1 - NORTH  10
+ 1 - SOUTH  50 
+ 2 - NORTH -10
+ 2 - SOUTH -50
+
+ EGO
+ 1 - NORTH  25
+ 1 - SOUTH -25 / 60
+ 2 - NORTH  30
+ 2 - SOUTH -30 / 60
+
+
+
+trial allo-2-3 works with 500 episodes and indicators 10/-10 and importance 2000

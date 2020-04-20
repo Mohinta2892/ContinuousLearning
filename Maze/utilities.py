@@ -3,11 +3,23 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as T
 import numpy as np
+from tqdm import tqdm
 
 from Transition import Transition
 from PIL import Image
 from EWC import EWC
 from DQN import DQN
+
+def showEnv(env):
+    state = env.reset()
+    state = env.extractState()
+    steps_taken = 0
+    isFinished = False
+
+    while not isFinished:
+        env.render()
+
+    return steps_taken
 
 def getDevice(forceCPU = False):
     if not forceCPU and torch.cuda.is_available():
@@ -109,3 +121,88 @@ def train(dqn, envs, EPISODES, TEST_FREQUENCY, DISPLAY_FREQUENCY, usingEWC=False
             print(f"##################################################")
 
     return episode_durations, test_durations
+
+
+def trainSmart(dqn: DQN, env, EPISODES, DISPLAY_FREQUENCY, config, usingEWC=True):
+    episode_durations = []
+
+    # Reset the DQN if the network is not new
+    if dqn.learned_tasks > 0:
+        dqn.reset_training()
+
+    if dqn.learned_tasks > 0 and usingEWC:
+        # Calculate Fisher by creating the EWC object
+        ewc = EWC(dqn)
+
+    # for episode in tqdm(range(EPISODES), desc=f"Training DQN on config {config}", unit='episode'):
+    for episode in range(EPISODES):
+        state = env.reset()
+        state = env.extractState()
+
+        steps = 0
+        isFinished = False
+
+        while not isFinished:
+            # if episode > 0 and episode % DISPLAY_FREQUENCY == 0:
+            #     env.render()
+
+            action = dqn.choose_action(state)
+
+            next_state, reward, done, info = env.step(action.item())
+            reward = torch.FloatTensor([[reward]])
+            next_state = env.extractState()
+
+            dqn.store_transition(state, action, reward, next_state)
+
+            # Update DQN
+            if dqn.learned_tasks > 0 and usingEWC:
+                dqn.learn(ewc)
+            else:
+                dqn.learn()
+
+            state = next_state
+            steps += 1
+            isFinished = done
+
+        dqn.decay_epsilon(episode)
+
+        episode_durations.append(steps)
+        # if episode % DISPLAY_FREQUENCY == 0:
+        #     tqdm.write(f"{episode+1} Episode finished after {steps} steps.")
+
+    dqn.learned_tasks += 1
+    return episode_durations
+
+
+def runDQN(dqn: DQN, ewc: EWC, env):
+    state = env.reset()
+    state = env.extractState()
+
+    steps = 0
+    isFinished = False
+
+    while not isFinished:
+        # if episode > 0 and episode % DISPLAY_FREQUENCY == 0:
+        #     env.render()
+
+        action = dqn.choose_action(state)
+
+        next_state, reward, done, info = env.step(action.item())
+        reward = torch.FloatTensor([[reward]])
+        next_state = env.extractState()
+
+        dqn.store_transition(state, action, reward, next_state)
+
+        # Update DQN
+        if ewc is None:
+            dqn.learn()
+        else:
+            dqn.learn(ewc)
+
+        state = next_state
+        steps += 1
+        isFinished = done
+
+    # dqn.decay_epsilon()
+
+    return steps

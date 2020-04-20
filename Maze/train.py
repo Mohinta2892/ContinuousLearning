@@ -4,7 +4,7 @@ import torch.optim as optim
 import torch.nn as nn
 import torch.nn.functional as F
 
-from utilities import train, test
+from utilities import train, test, showEnv
 from environments.EmptyEnv import EmptyEnv
 from environments.CrossEnv import CrossEnv
 from DQN import DQN
@@ -12,7 +12,7 @@ from visualise import visualise_data
 
 import numpy as np
 
-NAME = "test"
+NAME = "EmptyEnv"
 
 BATCH_SIZE = 32
 GAMMA = 0.9
@@ -22,13 +22,16 @@ EPISODES = 150
 DISPLAY_FREQUENCY = 50
 TEST_FREQUENCY = 2
 
-env_right = EmptyEnv(size=8, goal_position=[6, 1])
-env_right_reverse = EmptyEnv(size=8, goal_position=[1, 6], agent_start_pos=(6, 6))
-env_down = EmptyEnv(size=8, goal_position=[1, 6])
-env_diagonal = EmptyEnv(size=8, goal_position=[6, 6])
-env_diagonal_reverse = EmptyEnv(size=8, goal_position=[1, 1], agent_start_pos=[6, 6])
+env_right = EmptyEnv(size=9, goal_position=[7, 1])
+# env_right_reverse = EmptyEnv(size=9, goal_position=[1, 6], agent_start_pos=(6, 6))
+env_down = EmptyEnv(size=9, goal_position=[1, 7])
+# env_diagonal = EmptyEnv(size=9, goal_position=[6, 6])
+# env_diagonal_reverse = EmptyEnv(size=9, goal_position=[1, 1], agent_start_pos=[6, 6])
 
 env = env_right
+
+showEnv(env_down)
+
 
 # Turn Left, Turn Right, Move Forward
 env_action_num = 3

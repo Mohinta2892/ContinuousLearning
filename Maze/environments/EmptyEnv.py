@@ -15,7 +15,7 @@ class EmptyEnv(MiniGridEnv):
 
     """
 
-    def __init__(self, goal_position, size=8, agent_start_pos=(1,1), agent_start_dir=0):
+    def __init__(self, goal_position, size=9, agent_start_pos=(1,1), agent_start_dir=0):
         self.agent_start_pos = agent_start_pos
         self.agent_start_dir = agent_start_dir
         self.goal_position = goal_position
@@ -65,4 +65,5 @@ class EmptyEnv(MiniGridEnv):
         
         return torch.FloatTensor([state])
         
-        
+    def _reward(self):
+        return 1 - 0.9 * (self.step_count / self.max_steps)

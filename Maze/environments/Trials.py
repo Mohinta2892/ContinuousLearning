@@ -32,7 +32,7 @@ class TrialEnv(MiniGridEnv):
 
         super().__init__(
             grid_size=size,
-            max_steps=100,
+            max_steps=200,
         )
 
     def _gen_grid(self, width, height):
@@ -70,7 +70,7 @@ class TrialEnv(MiniGridEnv):
 
         grid_mask = np.array([s != None for s in self.grid.grid])
         self.grid_data = np.zeros([self.grid.width * self.grid.height])
-        self.grid_data[grid_mask] = 1
+        self.grid_data[grid_mask] = -1
         self.grid_data[self.goal_position[1] * self.grid.width + self.goal_position[0]] = 2
 
     def getStateSize(self):
@@ -81,20 +81,31 @@ class TrialEnv(MiniGridEnv):
 
         # Update agent position and direction
         state[self.agent_pos[1] * self.grid.width + self.agent_pos[0]] = 3
-        # state = np.append(state, self.agent_dir)
+        state = np.append(state, self.agent_dir)
         # state = np.append(state, self.agent_pos[0])
         # state = np.append(state, self.agent_pos[1])
-        state = np.append(state, self.agent_dir)
+        # state = np.append(state, self.agent_dir)
 
-
-        state[0] = 10 if self.agent_start_pos == self.NORTH else -10
-        state[1] = 10 if self.agent_start_pos == self.NORTH else -10
-        state[9] = 10 if self.agent_start_pos == self.NORTH else -10
-        state[10] = 10 if self.agent_start_pos == self.NORTH else -10
-
-        # print(state)
+        # state[0]  = self.get_offset()
+        # state[1]  = self.get_offset()
+        # state[9]  = self.get_offset()
+        # state[10] = self.get_offset()
 
         return torch.FloatTensor([state])
+    
+    def get_offset(self):
+        if self.agent_start_pos == self.NORTH:
+            if self.goal_position == self.WEST:
+                return 10
+            else:
+                return -10
+
+        else:
+            if self.goal_position == self.WEST:
+                return 50
+            else:
+                return -50
+    
         
     def _reward(self):
         """
