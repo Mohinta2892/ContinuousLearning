@@ -203,6 +203,6 @@ def runDQN(dqn: DQN, ewc: EWC, env):
         steps += 1
         isFinished = done
 
-    # dqn.decay_epsilon()
+    dqn.decay_epsilon()
 
     return steps
