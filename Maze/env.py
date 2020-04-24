@@ -8,13 +8,13 @@ from environments.Trials import TrialEnv
 
 
 scenarios = [
-    # ALLO-CENTRIC
+    # EGO-CENTRIC
     {"GOAL": TrialEnv.EAST,  "AGENT_POS": TrialEnv.SOUTH},  # 0
     {"GOAL": TrialEnv.WEST,  "AGENT_POS": TrialEnv.NORTH},  # 1
     {"GOAL": TrialEnv.EAST,  "AGENT_POS": TrialEnv.NORTH},  # 2
     {"GOAL": TrialEnv.WEST,  "AGENT_POS": TrialEnv.SOUTH},  # 3
 
-    # EGO-CENTRIC
+    # ALLO-CENTRIC
     {"GOAL": TrialEnv.WEST, "AGENT_POS": TrialEnv.SOUTH},  # 4
     {"GOAL": TrialEnv.WEST, "AGENT_POS": TrialEnv.NORTH},  # 5
     {"GOAL": TrialEnv.EAST, "AGENT_POS": TrialEnv.NORTH},  # 6
@@ -43,18 +43,16 @@ def get_maze_config(stradegy, start_zone):
     # 3/4 - EGOCENTRIC
 
     if start_zone == 1:
-        if stradegy == 1: return 1
-        if stradegy == 2: return 2
-        if stradegy == 3: return 5
-        if stradegy == 4: return 6
-        if stradegy == 5: return 5
+        if stradegy == 1: return 5
+        if stradegy == 2: return 6
+        if stradegy == 3: return 1
+        if stradegy == 4: return 2
     
     else:
-        if stradegy == 1: return 0
-        if stradegy == 2: return 3
-        if stradegy == 3: return 4
-        if stradegy == 4: return 7
-        if stradegy == 5: return 4
+        if stradegy == 1: return 4
+        if stradegy == 2: return 7
+        if stradegy == 3: return 0
+        if stradegy == 4: return 3
         
 
     # wrong config
@@ -67,7 +65,7 @@ for scenario in scenarios:
     env = TrialEnv(scenario["AGENT_POS"], scenario["GOAL"])
     environments.append(env)
 
-NAME = "sc03"
+NAME = "SC03"
 
 # READ TRIALS
 # csv_path = 'environments/configs.csv'
@@ -83,7 +81,7 @@ dqn = DQN(  gamma=0.9,
             batch_size=32,
             num_of_states=env_states_num,
             num_of_actions=env_action_num,
-            ewc_importance=1000 )
+            ewc_importance=800 )
 
 
 activations = []
@@ -93,10 +91,7 @@ def get_activation():
             activations.append(F.relu(output.detach()[0]))
     return hook
 
-dqn.eval_model.fc1.register_forward_hook(get_activation())
-
-
-
+# dqn.eval_model.fc1.register_forward_hook(get_activation())
 
 # STRADEGY
 # 1/2 - ALLOCENTRIC
@@ -110,6 +105,7 @@ activation_track = []
 ewc = None
 
 total = 0
+show = False
 
 for trial in trials:
     stradegy = trial["Strategy"]
@@ -123,19 +119,19 @@ for trial in trials:
         print(f"Changing strategy from {last_strategy} to {stradegy}")
         last_strategy = stradegy
         dqn.reset_training()
-        ewc = EWC(dqn)
+        # ewc = EWC(dqn)
 
-    steps = runDQN(dqn, ewc, env)
+    steps = runDQN(dqn, ewc, env, show)
 
     finished = steps < 200
     if finished: total += 1;
     outcome = {"Trial": trial['Trial'], "Finished": finished}
 
     # TRACK ACTIVATIONS FOR MIDDLE LAYER
-    for timestep, activation in enumerate(activations):
-        for ind, neuron in enumerate(activation):
-            track = {"Trial": trial["Trial"], "Strategy": stradegy, "Timestep": timestep, "Neuron": ind+1, "Activation": neuron.item()}
-            activation_track.append(track)
+    # for timestep, activation in enumerate(activations):
+    #     for ind, neuron in enumerate(activation):
+    #         track = {"Trial": trial["Trial"], "Strategy": stradegy, "Timestep": timestep, "Neuron": ind+1, "Activation": neuron.item()}
+    #         activation_track.append(track)
 
     if(stradegy == 1 or stradegy == 2):
         allo.append([trial['Trial'], int(finished)])
@@ -152,9 +148,9 @@ for trial in trials:
 print(len(allo))
 print(len(ego))
 print(total)
-np.save("test2", np.array(activation_track))
-np.save(f"data/trials/{NAME}_allo", np.array(allo))
-np.save(f"data/trials/{NAME}_ego", np.array(ego))
+# np.save("test2", np.array(activation_track))
+np.save(f"data/trials/{NAME}_no_EWC_allo_300_3", np.array(allo))
+np.save(f"data/trials/{NAME}_no_EWC_ego_300_3", np.array(ego))
 
 print("Done saving 1")
 # SAVE OUTPUT
@@ -164,11 +160,11 @@ print("Done saving 1")
 #     dict_writer.writeheader()
 #     dict_writer.writerows(trial_outcomes)
 
-with open('tracking2.csv', 'w', newline='') as output_file:
-    keys = activation_track[0].keys()
-    dict_writer = csv.DictWriter(output_file, keys)
-    dict_writer.writeheader()
-    dict_writer.writerows(activation_track)
+# with open(f"{NAME}_activations.csv", 'w', newline='') as output_file:
+#     keys = activation_track[0].keys()
+#     dict_writer = csv.DictWriter(output_file, keys)
+#     dict_writer.writeheader()
+#     dict_writer.writerows(activation_track)
 
 
 print("Done saving 2")

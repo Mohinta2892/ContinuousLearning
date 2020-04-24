@@ -9,13 +9,13 @@ import numpy as np
 from ReplayMemory import ReplayMemory
 from Transition import Transition
 
+# HIDDEN_SIZE = 82
 HIDDEN_SIZE = 200
 EPSILON_MAX = 0.3
 EPSILON_MIN = 0.05
 EPSILON_DECAY = 0.9
 
 class Net(nn.Module):
-
     def __init__(self, input_size, hidden_size, output_size):
         super(Net, self).__init__()
         self.fc1 = nn.Linear(input_size, hidden_size)
@@ -25,9 +25,6 @@ class Net(nn.Module):
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return x
-
-
-
 
 class DQN(object):
 
@@ -75,7 +72,7 @@ class DQN(object):
         self.epsilon *= EPSILON_DECAY
         self.epsilon = max(EPSILON_MIN, self.epsilon)
         # if(episode % 20 == 0):
-            #  print(f"Epsilon is {self.epsilon}, Episode {episode}")
+        # print(f"Epsilon is {self.epsilon}")
 
     def reset_training(self):
         self.learn_step_counter = 0
@@ -111,11 +108,11 @@ class DQN(object):
         new_q = (q_next * self.gamma) + reward_batch
 
         loss = self.loss_func(q_eval, new_q)
-        if ewc is not None:
-            penalty = ewc.penalty(self.eval_model)
-            updated_loss = loss + self.ewc_importance * penalty
-            # print(f"Loss: {loss}, Penalty: {penalty}, Updated loss: {updated_loss}")
-            loss = updated_loss
+        # if ewc is not None:
+        #     penalty = ewc.penalty(self.eval_model)
+        #     updated_loss = loss + self.ewc_importance * penalty
+        #     # print(f"Loss: {loss}, Penalty: {penalty}, Updated loss: {updated_loss}")
+        #     loss = updated_loss
 
 
         loss.backward()

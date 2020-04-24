@@ -173,17 +173,18 @@ def trainSmart(dqn: DQN, env, EPISODES, DISPLAY_FREQUENCY, config, usingEWC=True
     dqn.learned_tasks += 1
     return episode_durations
 
-
-def runDQN(dqn: DQN, ewc: EWC, env):
+def runDQN(dqn: DQN, ewc: EWC, env, show):
     state = env.reset()
     state = env.extractState()
-
+    
     steps = 0
     isFinished = False
 
     while not isFinished:
         # if episode > 0 and episode % DISPLAY_FREQUENCY == 0:
-        #     env.render()
+
+        if show:
+            env.render()
 
         action = dqn.choose_action(state)
 
