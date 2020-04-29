@@ -54,5 +54,4 @@ class EWC(object):
             _loss = self._precision_matrices[n] * (p - self._means[n]) ** 2
             loss += _loss.sum()
 
-        # TODO: return (self.lamda/2)*sum(losses)
         return loss

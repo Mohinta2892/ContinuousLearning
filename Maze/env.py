@@ -1,6 +1,7 @@
 import pandas as pd
 import csv
 
+from SI import SI
 from DQN import DQN
 from utilities import *
 import torch.nn.functional as F
@@ -103,6 +104,8 @@ last_strategy = 3   # First from sc03...
 trial_outcomes = []
 activation_track = []
 ewc = None
+si = None
+total_steps = 0
 
 total = 0
 show = False
@@ -119,9 +122,20 @@ for trial in trials:
         print(f"Changing strategy from {last_strategy} to {stradegy}")
         last_strategy = stradegy
         dqn.reset_training()
+
         # ewc = EWC(dqn)
 
-    steps = runDQN(dqn, ewc, env, show)
+        # if si is None: 
+        #     si = SI(dqn, 0.5, 0.1)
+        #     si.refresh_W()
+            
+        # si.update_omega()
+        # si.refresh_W()
+
+        
+
+    steps = runDQN(dqn, ewc, si, env, show)
+    total_steps += steps
 
     finished = steps < 200
     if finished: total += 1;
@@ -148,9 +162,10 @@ for trial in trials:
 print(len(allo))
 print(len(ego))
 print(total)
+print(f"Average steps: {total_steps/len(trials)}")
 # np.save("test2", np.array(activation_track))
-np.save(f"data/trials/{NAME}_no_EWC_allo_300_3", np.array(allo))
-np.save(f"data/trials/{NAME}_no_EWC_ego_300_3", np.array(ego))
+np.save(f"data/trials/{NAME}_SI_allo_3", np.array(allo))
+np.save(f"data/trials/{NAME}_SI_ego_3", np.array(ego))
 
 print("Done saving 1")
 # SAVE OUTPUT

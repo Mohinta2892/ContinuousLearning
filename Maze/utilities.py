@@ -8,6 +8,7 @@ from tqdm import tqdm
 from Transition import Transition
 from PIL import Image
 from EWC import EWC
+from SI import SI
 from DQN import DQN
 
 def showEnv(env):
@@ -173,7 +174,7 @@ def trainSmart(dqn: DQN, env, EPISODES, DISPLAY_FREQUENCY, config, usingEWC=True
     dqn.learned_tasks += 1
     return episode_durations
 
-def runDQN(dqn: DQN, ewc: EWC, env, show):
+def runDQN(dqn: DQN, ewc: EWC, si:SI, env, show):
     state = env.reset()
     state = env.extractState()
     
@@ -195,10 +196,13 @@ def runDQN(dqn: DQN, ewc: EWC, env, show):
         dqn.store_transition(state, action, reward, next_state)
 
         # Update DQN
-        if ewc is None:
-            dqn.learn()
+        if ewc is not None:
+            dqn.learn(ewc=ewc)
+        elif si is not None:
+            dqn.learn(si=si)
+            si.update_W()
         else:
-            dqn.learn(ewc)
+            dqn.learn()
 
         state = next_state
         steps += 1

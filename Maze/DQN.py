@@ -28,7 +28,7 @@ class Net(nn.Module):
 
 class DQN(object):
 
-    def __init__(self, gamma, memory_size, target_update_counter, batch_size, num_of_states, num_of_actions, ewc_importance=28):
+    def __init__(self, gamma, memory_size, target_update_counter, batch_size, num_of_states, num_of_actions, ewc_importance=28, si_importance=30):
         self.num_of_states = num_of_states
         self.num_of_actions = num_of_actions
 
@@ -51,6 +51,7 @@ class DQN(object):
         self.gamma = gamma
         self.epsilon = EPSILON_MAX
         self.ewc_importance = ewc_importance
+        self.si_importance = si_importance
 
     def choose_action(self, state):
         # From np.array to torch
@@ -84,7 +85,7 @@ class DQN(object):
 
         self.memory = ReplayMemory(self.memory_size)
 
-    def learn(self, ewc=None):
+    def learn(self, ewc=None, si=None):
         if len(self.memory) < self.batch_size:
             return
 
@@ -108,12 +109,17 @@ class DQN(object):
         new_q = (q_next * self.gamma) + reward_batch
 
         loss = self.loss_func(q_eval, new_q)
-        # if ewc is not None:
-        #     penalty = ewc.penalty(self.eval_model)
-        #     updated_loss = loss + self.ewc_importance * penalty
-        #     # print(f"Loss: {loss}, Penalty: {penalty}, Updated loss: {updated_loss}")
-        #     loss = updated_loss
+        if ewc is not None:
+            penalty = ewc.penalty(self.eval_model)
+            updated_loss = loss + self.ewc_importance * penalty
+            # print(f"Loss: {loss}, Penalty: {penalty}, Updated loss: {updated_loss}")
+            loss = updated_loss
 
+        if si is not None:
+            penalty = si.penalty()
+            updated_loss = loss + self.si_importance * penalty
+            # print(f"Loss: {loss}, Penalty: {penalty}, Updated loss: {updated_loss}")
+            loss = updated_loss
 
         loss.backward()
         self.optimizer.step()
